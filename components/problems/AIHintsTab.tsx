@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 
 interface HintLog {
   id: string;
@@ -56,7 +60,7 @@ export function AIHintsTab({
 
   // Typing animation effect
   useEffect(() => {
-    if (!currentHint || !isTyping) return;
+    if (!currentHint || !isTyping || !currentHint.hintText) return;
 
     const fullText = currentHint.hintText;
     let currentIndex = 0;
@@ -178,6 +182,17 @@ export function AIHintsTab({
             className="inline-block px-6 py-3 bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white rounded-lg transition font-medium">
             Sign In
           </a>
+        </div>
+      </div>
+    );
+  }
+
+  if (historyLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading AI hints...</p>
         </div>
       </div>
     );
@@ -337,8 +352,12 @@ export function AIHintsTab({
             </div>
           </div>
 
-          <div className="prose prose-invert prose-slate max-w-none text-slate-200 leading-relaxed whitespace-pre-wrap">
-            {isTyping ? typingText : currentHint.hintText}
+          <div className="text-slate-200 [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white [&_h4]:text-white [&_strong]:text-white [&_code]:text-purple-300 [&_code]:bg-slate-800 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_pre]:bg-slate-800 [&_pre]:p-3 [&_pre]:rounded [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1 [&_p]:mb-3 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_.katex]:text-purple-300">
+            <ReactMarkdown
+              remarkPlugins={[remarkMath]}
+              rehypePlugins={[rehypeKatex]}>
+              {isTyping ? typingText : currentHint.hintText}
+            </ReactMarkdown>
             {isTyping && <span className="animate-pulse">▊</span>}
           </div>
         </div>
@@ -371,9 +390,10 @@ export function AIHintsTab({
                 </div>
               ) : (
                 hintHistory.map(hint => {
+                  const hintText = hint.hintText || "";
                   const isExpanded = expandedHints.has(hint.id);
-                  const preview = hint.hintText.substring(0, 100);
-                  const needsExpansion = hint.hintText.length > 100;
+                  const preview = hintText.substring(0, 100);
+                  const needsExpansion = hintText.length > 100;
 
                   return (
                     <div
@@ -408,10 +428,20 @@ export function AIHintsTab({
                           )}
                         </div>
 
-                        <div className="text-slate-300 text-sm whitespace-pre-wrap">
-                          {isExpanded ? hint.hintText : preview}
-                          {!isExpanded && needsExpansion && "..."}
-                        </div>
+                        {isExpanded ? (
+                          <div className="text-slate-300 text-sm [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1 [&_strong]:text-white [&_code]:text-purple-300 [&_code]:bg-slate-800 [&_code]:px-1 [&_code]:rounded [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:mb-0.5 [&_p]:mb-2 [&_.katex]:text-purple-300">
+                            <ReactMarkdown
+                              remarkPlugins={[remarkMath]}
+                              rehypePlugins={[rehypeKatex]}>
+                              {hintText}
+                            </ReactMarkdown>
+                          </div>
+                        ) : (
+                          <p className="text-slate-300 text-sm">
+                            {hintText.replace(/[*#`$]/g, "").substring(0, 100)}
+                            {hintText.length > 100 && "..."}
+                          </p>
+                        )}
                       </div>
                     </div>
                   );

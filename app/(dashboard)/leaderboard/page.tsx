@@ -89,10 +89,10 @@ function LeaderboardRow({
       transition={{ delay: index * 0.05 }}>
       <Link
         href={`/profile/${entry.username}`}
-        className={`flex items-center gap-4 p-4 rounded-lg transition-colors ${
+        className={`flex items-center gap-4 p-4 transition-colors ${
           isTopThree
-            ? "bg-zinc-800/50 border border-zinc-700 hover:bg-zinc-800"
-            : "hover:bg-zinc-900"
+            ? "bg-zinc-800/50 hover:bg-zinc-800"
+            : "hover:bg-zinc-800/50"
         }`}>
         {/* Rank */}
         <RankBadge rank={entry.rank} />

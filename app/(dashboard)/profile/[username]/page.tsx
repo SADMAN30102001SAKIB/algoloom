@@ -18,8 +18,10 @@ import {
   ExternalLink,
   FileText,
   Flame,
+  BadgeCheck,
 } from "lucide-react";
 import FriendButton from "@/components/FriendButton";
+import { PremiumBadge } from "@/components/premium/PremiumBadge";
 
 // Brand icons (lucide deprecated them)
 const GithubIcon = () => (
@@ -46,6 +48,9 @@ interface UserProfile {
   linkedinUrl: string | null;
   xp: number;
   level: number;
+  isPro: boolean;
+  emailVerified: boolean;
+  subscriptionPlan: "MONTHLY" | "YEARLY" | null;
   levelProgress: {
     current: number;
     required: number;
@@ -436,6 +441,22 @@ export default function ProfilePage() {
                     <h1 className="text-2xl font-bold text-white">
                       {profile.name || profile.username}
                     </h1>
+                    {profile.emailVerified && (
+                      <span
+                        className="flex items-center gap-1 px-2 py-0.5 bg-blue-500/20 rounded-full"
+                        title="Verified Account">
+                        <BadgeCheck className="w-4 h-4 text-blue-400" />
+                        <span className="text-xs text-blue-400 font-medium">
+                          Verified
+                        </span>
+                      </span>
+                    )}
+                    {profile.isPro && (
+                      <PremiumBadge
+                        size="md"
+                        plan={profile.subscriptionPlan || undefined}
+                      />
+                    )}
                     <FriendButton
                       targetUserId={profile.id}
                       targetUsername={profile.username}

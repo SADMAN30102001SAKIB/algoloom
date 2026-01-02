@@ -25,6 +25,14 @@ export async function GET(
         linkedinUrl: true,
         xp: true,
         createdAt: true,
+        isPro: true,
+        emailVerified: true,
+        subscription: {
+          select: {
+            plan: true,
+            status: true,
+          },
+        },
         achievements: {
           include: {
             achievement: true,
@@ -226,6 +234,12 @@ export async function GET(
         linkedinUrl: user.linkedinUrl,
         xp: user.xp,
         level,
+        isPro: user.isPro,
+        emailVerified: !!user.emailVerified,
+        subscriptionPlan:
+          user.subscription?.status === "ACTIVE"
+            ? user.subscription.plan
+            : null,
         levelProgress: {
           current: xpProgress,
           required: xpRequired,

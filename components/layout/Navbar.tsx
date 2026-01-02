@@ -83,7 +83,12 @@ export default function Navbar() {
           ) : session?.user ? (
             <>
               {/* Premium Badge */}
-              {session.user.isPro && <PremiumBadge size="md" />}
+              {session.user.isPro && (
+                <PremiumBadge
+                  size="md"
+                  plan={session.user.subscriptionPlan || undefined}
+                />
+              )}
 
               {/* User Menu */}
               <DropdownMenu>
@@ -104,17 +109,23 @@ export default function Navbar() {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end">
+                <DropdownMenuContent
+                  className="w-56 bg-slate-900 border-slate-700"
+                  align="end">
                   <div className="flex items-center justify-start gap-2 p-2">
-                    <div className="flex flex-col space-y-1 leading-none">
-                      <p className="font-medium">{session.user.name}</p>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="flex flex-col space-y-1 leading-none min-w-0">
+                      <p className="font-medium text-white truncate">
+                        {session.user.name}
+                      </p>
+                      <p className="text-sm text-slate-400 truncate">
                         {session.user.email}
                       </p>
                     </div>
                   </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
+                  <DropdownMenuSeparator className="bg-slate-700" />
+                  <DropdownMenuItem
+                    asChild
+                    className="text-slate-200 focus:bg-slate-800 focus:text-white">
                     <Link
                       href={`/profile/${session.user.username}`}
                       className="cursor-pointer">
@@ -122,24 +133,28 @@ export default function Navbar() {
                       Profile
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
+                  <DropdownMenuItem
+                    asChild
+                    className="text-slate-200 focus:bg-slate-800 focus:text-white">
                     <Link href="/settings/billing" className="cursor-pointer">
                       <CreditCard className="mr-2 h-4 w-4" />
                       Billing
                     </Link>
                   </DropdownMenuItem>
                   {session.user.role === "ADMIN" && (
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem
+                      asChild
+                      className="text-slate-200 focus:bg-slate-800 focus:text-white">
                       <Link href="/admin" className="cursor-pointer">
                         <Settings className="mr-2 h-4 w-4" />
                         Admin Panel
                       </Link>
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator className="bg-slate-700" />
                   <DropdownMenuItem
                     onClick={() => signOut({ callbackUrl: "/" })}
-                    className="cursor-pointer text-red-400 focus:text-red-400">
+                    className="cursor-pointer text-red-400 focus:text-red-400 focus:bg-slate-800">
                     <LogOut className="mr-2 h-4 w-4" />
                     Log out
                   </DropdownMenuItem>

@@ -141,6 +141,11 @@ export const authConfig: NextAuthConfig = {
       if (trigger === "signIn" && token.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: token.email as string },
+          include: {
+            subscription: {
+              select: { plan: true, status: true },
+            },
+          },
         });
         if (dbUser) {
           token.id = dbUser.id;
@@ -148,12 +153,21 @@ export const authConfig: NextAuthConfig = {
           token.username = dbUser.username;
           token.emailVerified = dbUser.emailVerified;
           token.isPro = dbUser.isPro;
+          token.subscriptionPlan =
+            dbUser.subscription?.status === "ACTIVE"
+              ? dbUser.subscription.plan
+              : null;
         }
       }
       // Refresh token data from database on update trigger (e.g., after email verification)
       else if (trigger === "update" && token.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: token.email as string },
+          include: {
+            subscription: {
+              select: { plan: true, status: true },
+            },
+          },
         });
         if (dbUser) {
           token.id = dbUser.id;
@@ -161,6 +175,10 @@ export const authConfig: NextAuthConfig = {
           token.username = dbUser.username;
           token.emailVerified = dbUser.emailVerified;
           token.isPro = dbUser.isPro;
+          token.subscriptionPlan =
+            dbUser.subscription?.status === "ACTIVE"
+              ? dbUser.subscription.plan
+              : null;
         }
       }
       // For credentials provider, user data comes from authorize()
@@ -170,6 +188,7 @@ export const authConfig: NextAuthConfig = {
         token.username = user.username;
         token.emailVerified = user.emailVerified;
         token.isPro = user.isPro;
+        token.subscriptionPlan = user.subscriptionPlan;
       }
       return token;
     },
@@ -179,7 +198,9 @@ export const authConfig: NextAuthConfig = {
         session.user.role = token.role;
         session.user.username = token.username;
         session.user.emailVerified = token.emailVerified ?? null;
-        session.user.isPro = token.isPro ?? false;
+        // Admins automatically get Pro access
+        session.user.isPro = token.role === "ADMIN" || (token.isPro ?? false);
+        session.user.subscriptionPlan = token.subscriptionPlan ?? null;
       }
       return session;
     },

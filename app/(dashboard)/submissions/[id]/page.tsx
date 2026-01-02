@@ -206,20 +206,19 @@ export default function SubmissionPage({
                 className="text-slate-400 hover:text-white transition">
                 ← Back to {fromAdmin ? "Admin" : "Problem"}
               </button>
-              <div>
+              <div className="flex items-center gap-3">
                 <h1 className="text-xl font-semibold text-white">
                   {submission.problem.title}
                 </h1>
-                <div className="flex items-center gap-3 mt-1">
-                  <span
-                    className={`text-sm font-medium ${getDifficultyColor(submission.problem.difficulty)}`}>
-                    {submission.problem.difficulty}
-                  </span>
-                  <span className="text-slate-500 text-sm">•</span>
-                  <span className="text-slate-400 text-sm">
-                    {new Date(submission.createdAt).toLocaleString()}
-                  </span>
-                </div>
+                <span className="text-slate-500">•</span>
+                <span
+                  className={`text-sm font-medium ${getDifficultyColor(submission.problem.difficulty)}`}>
+                  {submission.problem.difficulty}
+                </span>
+                <span className="text-slate-500">•</span>
+                <span className="text-slate-400 text-sm">
+                  {new Date(submission.createdAt).toLocaleString()}
+                </span>
               </div>
             </div>
 

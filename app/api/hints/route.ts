@@ -38,23 +38,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Problem not found" }, { status: 404 });
     }
 
-    // Check daily hint limit (3 hints per problem per day)
+    // Get user's Pro status
+    const fullUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { isPro: true, role: true },
+    });
+    const isPro = fullUser?.isPro || fullUser?.role === "ADMIN";
+
+    // Check daily hint limit (5 hints per day for free users, unlimited for Pro)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const hintsToday = await prisma.hintLog.count({
       where: {
         userId: user.id,
-        problemId: problem.id,
         createdAt: {
           gte: today,
         },
       },
     });
 
-    if (hintsToday >= 3) {
+    const DAILY_LIMIT = 5; // Free users get 5 hints per day total
+    if (!isPro && hintsToday >= DAILY_LIMIT) {
       return NextResponse.json(
-        { error: "Daily hint limit reached (3 hints per problem per day)" },
+        {
+          error:
+            "Daily hint limit reached. Upgrade to Pro for unlimited hints!",
+        },
         { status: 429 },
       );
     }
@@ -102,18 +112,19 @@ export async function POST(req: NextRequest) {
         hintLevel,
         prompt: JSON.stringify({ hintLevel }),
         response: hintText,
-        cost: 0,
       },
     });
 
-    // Deduct XP cost (optional: implement XP cost for hints)
+    // Deduct XP cost and recalculate level
     const xpCost = hintLevel * 5; // 5 XP per hint level
+    const newXP = Math.max(0, user.xp - xpCost);
+    const newLevel = Math.floor(Math.sqrt(newXP / 5)) + 1;
+
     await prisma.user.update({
       where: { id: user.id },
       data: {
-        xp: {
-          decrement: Math.min(xpCost, user.xp), // Don't go below 0 XP
-        },
+        xp: newXP,
+        level: newLevel,
       },
     });
 
@@ -121,11 +132,13 @@ export async function POST(req: NextRequest) {
       success: true,
       hint: {
         id: hint.id,
-        content: hintText,
-        level: hintLevel,
-        xpCost,
+        hintText: hintText,
+        hintLevel: hintLevel,
+        xpSpent: xpCost,
+        createdAt: hint.createdAt.toISOString(),
       },
-      remainingHints: 3 - hintsToday - 1,
+      remainingHints: isPro ? -1 : DAILY_LIMIT - hintsToday - 1, // -1 means unlimited
+      isPro,
     });
   } catch (error) {
     console.error("Hint generation error:", error);
@@ -166,9 +179,10 @@ export async function GET(req: NextRequest) {
       success: true,
       hints: hints.map(h => ({
         id: h.id,
-        content: h.response,
-        level: h.hintLevel,
-        createdAt: h.createdAt,
+        hintText: h.response,
+        hintLevel: h.hintLevel,
+        xpSpent: h.hintLevel * 5,
+        createdAt: h.createdAt.toISOString(),
       })),
     });
   } catch (error) {

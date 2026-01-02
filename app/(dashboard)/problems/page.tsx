@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Navbar from "@/components/layout/Navbar";
 import DailyChallengeBanner from "@/components/DailyChallengeBanner";
 
 interface Problem {
@@ -158,100 +159,7 @@ function ProblemsPageContent() {
 
   return (
     <div className="min-h-screen bg-slate-950">
-      {/* Header */}
-      <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link
-              href="/"
-              className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent hover:from-cyan-300 hover:to-purple-300 transition-all">
-              AlgoLoom
-            </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link
-                href="/problems"
-                className="text-slate-300 hover:text-white transition font-medium">
-                Problems
-              </Link>
-              <Link
-                href="/leaderboard"
-                className="text-slate-300 hover:text-white transition font-medium">
-                Leaderboard
-              </Link>
-              <Link
-                href="/friends"
-                className="text-slate-300 hover:text-white transition font-medium">
-                Friends
-              </Link>
-              <Link
-                href="/submissions"
-                className="text-slate-300 hover:text-white transition font-medium">
-                Submissions
-              </Link>
-            </nav>
-          </div>
-          <div className="flex items-center gap-4">
-            {session?.user ? (
-              <>
-                <Link
-                  href={`/profile/${session.user.username}`}
-                  className="flex flex-col items-end hover:opacity-80 transition">
-                  <span className="text-slate-200 font-medium">
-                    {session.user.name || session.user.username || "User"}
-                  </span>
-                  {session.user.emailVerified ? (
-                    <span className="text-xs text-green-400 flex items-center gap-1">
-                      <svg
-                        className="w-3 h-3"
-                        fill="currentColor"
-                        viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Verified
-                    </span>
-                  ) : (
-                    <span className="text-xs text-yellow-400 flex items-center gap-1">
-                      <svg
-                        className="w-3 h-3"
-                        fill="currentColor"
-                        viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Unverified
-                    </span>
-                  )}
-                </Link>
-                <Link
-                  href="/api/auth/signout"
-                  className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition border border-red-500/20 font-medium">
-                  Sign Out
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="px-4 py-2 text-slate-300 hover:text-white transition font-medium">
-                  Sign In
-                </Link>
-                <Link
-                  href="/register"
-                  className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white rounded-lg transition font-medium">
-                  Sign Up
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       <div className="container mx-auto px-4 py-8">
         {/* Daily Challenge Banner */}

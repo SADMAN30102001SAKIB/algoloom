@@ -95,7 +95,7 @@ export const CodeEditor = forwardRef<CodeEditorRef, CodeEditorProps>(
     };
 
     return (
-      <div className="h-full w-full border border-border overflow-hidden">
+      <div className="h-full w-full border border-slate-700 overflow-hidden">
         <Editor
           height="100%"
           language={languageMap[language]}

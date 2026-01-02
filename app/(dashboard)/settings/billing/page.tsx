@@ -100,14 +100,14 @@ function BillingContent() {
 
   if (authStatus === "loading" || loading) {
     return (
-      <>
+      <div className="min-h-screen bg-slate-950">
         <Navbar />
         <main className="container mx-auto px-4 py-8 max-w-4xl">
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
           </div>
         </main>
-      </>
+      </div>
     );
   }
 
@@ -121,31 +121,35 @@ function BillingContent() {
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-slate-950">
       <Navbar />
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Billing & Subscription</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold mb-2 text-white">
+            Billing & Subscription
+          </h1>
+          <p className="text-slate-400">
             Manage your subscription and billing information
           </p>
         </div>
 
         {/* Current Plan Card */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-slate-900 border-slate-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <Crown className="w-5 h-5 text-yellow-400" />
               Current Plan
             </CardTitle>
-            <CardDescription>Your current subscription status</CardDescription>
+            <CardDescription className="text-slate-400">
+              Your current subscription status
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {subscription && isPro ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-xl font-semibold">
+                    <h3 className="text-xl font-semibold text-white">
                       AlgoLoom Premium ({subscription.plan})
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
@@ -159,37 +163,39 @@ function BillingContent() {
                         {subscription.status}
                       </Badge>
                       {subscription.cancelAtPeriodEnd && (
-                        <Badge variant="outline" className="text-yellow-400">
+                        <Badge
+                          variant="outline"
+                          className="text-yellow-400 border-yellow-400/50">
                           Cancels at period end
                         </Badge>
                       )}
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold">
+                    <p className="text-2xl font-bold text-white">
                       {subscription.plan === "MONTHLY" ? "$9.99" : "$79.99"}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-slate-400">
                       per {subscription.plan === "MONTHLY" ? "month" : "year"}
                     </p>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-border">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="pt-4 border-t border-slate-700">
+                  <div className="flex items-center gap-2 text-sm text-slate-400">
                     <Calendar className="w-4 h-4" />
                     <span>
                       {subscription.cancelAtPeriodEnd
                         ? "Access ends"
                         : "Next billing date"}
                       :{" "}
-                      <span className="text-foreground">
+                      <span className="text-white">
                         {format(
                           new Date(subscription.currentPeriodEnd),
                           "MMMM d, yyyy",
                         )}
                       </span>
-                      <span className="text-muted-foreground ml-1">
+                      <span className="text-slate-400 ml-1">
                         (
                         {formatDistanceToNow(
                           new Date(subscription.currentPeriodEnd),
@@ -223,14 +229,16 @@ function BillingContent() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-xl font-semibold">Free Plan</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="text-xl font-semibold text-white">
+                      Free Plan
+                    </h3>
+                    <p className="text-sm text-slate-400">
                       Upgrade to unlock premium features
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold">$0</p>
-                    <p className="text-sm text-muted-foreground">forever</p>
+                    <p className="text-2xl font-bold text-white">$0</p>
+                    <p className="text-sm text-slate-400">forever</p>
                   </div>
                 </div>
 
@@ -246,10 +254,10 @@ function BillingContent() {
         </Card>
 
         {/* Premium Benefits */}
-        <Card>
+        <Card className="bg-slate-900 border-slate-700">
           <CardHeader>
-            <CardTitle>Premium Benefits</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-white">Premium Benefits</CardTitle>
+            <CardDescription className="text-slate-400">
               What you get with AlgoLoom Premium
             </CardDescription>
           </CardHeader>
@@ -268,10 +276,10 @@ function BillingContent() {
                 <li key={benefit} className="flex items-center gap-2">
                   <CheckCircle
                     className={`w-4 h-4 ${
-                      isPro ? "text-green-500" : "text-muted-foreground"
+                      isPro ? "text-green-500" : "text-slate-500"
                     }`}
                   />
-                  <span className={isPro ? "" : "text-muted-foreground"}>
+                  <span className={isPro ? "text-white" : "text-slate-400"}>
                     {benefit}
                   </span>
                 </li>
@@ -280,7 +288,7 @@ function BillingContent() {
           </CardContent>
         </Card>
       </main>
-    </>
+    </div>
   );
 }
 
@@ -288,8 +296,8 @@ export default function BillingPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
         </div>
       }>
       <BillingContent />

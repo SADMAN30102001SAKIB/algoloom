@@ -104,7 +104,7 @@ function PricingContent() {
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-slate-950">
       <Navbar />
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         {canceled && (
@@ -120,10 +120,10 @@ function PricingContent() {
             <Sparkles className="w-3 h-3 mr-1" />
             Premium Plans
           </Badge>
-          <h1 className="text-4xl font-bold mb-4">
+          <h1 className="text-4xl font-bold mb-4 text-white">
             Unlock Your Full Potential
           </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
             Get access to premium problems, unlimited AI hints, and exclusive
             features to accelerate your coding journey.
           </p>
@@ -131,34 +131,34 @@ function PricingContent() {
 
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           {/* Free Plan */}
-          <Card className="relative border-border/50">
+          <Card className="relative border-slate-700 bg-slate-900 flex flex-col">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-white">
                 <Zap className="w-5 h-5 text-blue-400" />
                 Free
               </CardTitle>
               <div className="mt-4">
-                <span className="text-4xl font-bold">$0</span>
-                <span className="text-muted-foreground">/forever</span>
+                <span className="text-4xl font-bold text-white">$0</span>
+                <span className="text-slate-400">/forever</span>
               </div>
-              <CardDescription>Perfect for getting started</CardDescription>
+              <CardDescription className="text-slate-400">
+                Perfect for getting started
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
                 {freeFeatures.map(feature => (
                   <li key={feature} className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
-                    <span className="text-sm text-muted-foreground">
-                      {feature}
-                    </span>
+                    <span className="text-sm text-slate-300">{feature}</span>
                   </li>
                 ))}
               </ul>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="mt-auto">
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full border-slate-600 bg-slate-800 text-white hover:bg-slate-700 hover:text-white"
                 onClick={() => router.push("/problems")}>
                 Start for Free
               </Button>
@@ -169,10 +169,8 @@ function PricingContent() {
           {plans.map(plan => (
             <Card
               key={plan.id}
-              className={`relative ${
-                plan.popular
-                  ? "border-purple-500 shadow-lg shadow-purple-500/20"
-                  : "border-border/50"
+              className={`relative bg-slate-900 flex flex-col ${
+                plan.popular ? "border-purple-500" : "border-slate-700"
               }`}>
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -183,7 +181,7 @@ function PricingContent() {
                 </div>
               )}
               <CardHeader className={plan.popular ? "pt-8" : ""}>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-white">
                   <Crown
                     className={`w-5 h-5 ${
                       plan.popular ? "text-purple-400" : "text-yellow-400"
@@ -192,10 +190,14 @@ function PricingContent() {
                   {plan.name}
                 </CardTitle>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">{plan.price}</span>
-                  <span className="text-muted-foreground">{plan.period}</span>
+                  <span className="text-4xl font-bold text-white">
+                    {plan.price}
+                  </span>
+                  <span className="text-slate-400">{plan.period}</span>
                 </div>
-                <CardDescription>{plan.description}</CardDescription>
+                <CardDescription className="text-slate-400">
+                  {plan.description}
+                </CardDescription>
                 {plan.savings && (
                   <Badge
                     variant="secondary"
@@ -209,12 +211,12 @@ function PricingContent() {
                   {plan.features.map(feature => (
                     <li key={feature} className="flex items-start gap-2">
                       <Check className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
-                      <span className="text-sm">{feature}</span>
+                      <span className="text-sm text-slate-300">{feature}</span>
                     </li>
                   ))}
                 </ul>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="mt-auto">
                 <Button
                   className={`w-full ${
                     plan.popular
@@ -239,34 +241,34 @@ function PricingContent() {
 
         {/* FAQ Section */}
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-6">
+          <h2 className="text-2xl font-bold text-center mb-6 text-white">
             Frequently Asked Questions
           </h2>
           <div className="space-y-4">
-            <div className="p-4 bg-card rounded-lg border border-border/50">
-              <h3 className="font-semibold mb-2">
+            <div className="p-4 bg-slate-900 rounded-lg border border-slate-700">
+              <h3 className="font-semibold mb-2 text-white">
                 Can I cancel my subscription?
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-400">
                 Yes! You can cancel anytime from your billing settings.
                 You&apos;ll continue to have access until the end of your
                 billing period.
               </p>
             </div>
-            <div className="p-4 bg-card rounded-lg border border-border/50">
-              <h3 className="font-semibold mb-2">
+            <div className="p-4 bg-slate-900 rounded-lg border border-slate-700">
+              <h3 className="font-semibold mb-2 text-white">
                 What payment methods do you accept?
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-400">
                 We accept all major credit cards through Stripe, including Visa,
                 Mastercard, and American Express.
               </p>
             </div>
-            <div className="p-4 bg-card rounded-lg border border-border/50">
-              <h3 className="font-semibold mb-2">
+            <div className="p-4 bg-slate-900 rounded-lg border border-slate-700">
+              <h3 className="font-semibold mb-2 text-white">
                 Can I switch between plans?
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-400">
                 Yes, you can upgrade or downgrade at any time. Changes will be
                 prorated automatically.
               </p>
@@ -274,7 +276,7 @@ function PricingContent() {
           </div>
         </div>
       </main>
-    </>
+    </div>
   );
 }
 
@@ -282,8 +284,8 @@ export default function PricingPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
         </div>
       }>
       <PricingContent />
