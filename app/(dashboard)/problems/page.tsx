@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import DailyChallengeBanner from "@/components/DailyChallengeBanner";
 
@@ -20,7 +19,7 @@ interface Problem {
 }
 
 function ProblemsPageContent() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [problems, setProblems] = useState<Problem[]>([]);

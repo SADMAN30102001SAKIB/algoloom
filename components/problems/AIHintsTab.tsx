@@ -392,7 +392,6 @@ export function AIHintsTab({
                 hintHistory.map(hint => {
                   const hintText = hint.hintText || "";
                   const isExpanded = expandedHints.has(hint.id);
-                  const preview = hintText.substring(0, 100);
                   const needsExpansion = hintText.length > 100;
 
                   return (

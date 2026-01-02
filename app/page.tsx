@@ -60,7 +60,7 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="text-lg border-slate-700 text-slate-600 hover:bg-slate-800 hover:text-white">
+                  className="text-lg border-slate-600 bg-slate-800/50 text-white hover:bg-slate-700 hover:text-white">
                   Sign In
                 </Button>
               </Link>
