@@ -19,6 +19,7 @@ import {
   FileText,
   Flame,
   BadgeCheck,
+  Users,
 } from "lucide-react";
 import FriendButton from "@/components/FriendButton";
 import { PremiumBadge } from "@/components/premium/PremiumBadge";
@@ -58,6 +59,7 @@ interface UserProfile {
   };
   rank: number;
   streak: number;
+  friendsCount: number;
   problemsSolved: number;
   totalSubmissions: number;
   acceptanceRate: number;
@@ -576,6 +578,12 @@ export default function ProfilePage() {
             label="Achievements"
             value={profile.achievements.length}
             color="bg-purple-500/20 text-purple-500"
+          />
+          <StatCard
+            icon={Users}
+            label="Friends"
+            value={profile.friendsCount}
+            color="bg-pink-500/20 text-pink-500"
           />
         </motion.div>
 

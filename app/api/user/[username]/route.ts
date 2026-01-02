@@ -220,6 +220,16 @@ export async function GET(
     // Calculate streak
     const streak = await calculateStreak(user.id);
 
+    // Get friends count (accepted friendships where user is either userId or friendId)
+    const friendsCount = await prisma.friendship.count({
+      where: {
+        OR: [
+          { userId: user.id, status: "ACCEPTED" },
+          { friendId: user.id, status: "ACCEPTED" },
+        ],
+      },
+    });
+
     return NextResponse.json({
       success: true,
       user: {
@@ -247,6 +257,7 @@ export async function GET(
         },
         rank,
         streak,
+        friendsCount,
         problemsSolved: user._count.problemStats,
         totalSubmissions: user._count.submissions,
         acceptanceRate:
