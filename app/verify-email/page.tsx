@@ -94,13 +94,13 @@ function VerifyEmailContent() {
                 Verification Failed
               </h1>
               <p className="text-muted-foreground">{message}</p>
-              <div className="pt-4 space-y-3">
-                <Link href="/register">
+              <div className="pt-4 flex flex-col gap-3">
+                <Link href="/register" className="w-full">
                   <Button variant="outline" className="w-full" size="lg">
                     Try Again
                   </Button>
                 </Link>
-                <Link href="/login">
+                <Link href="/login" className="w-full">
                   <Button variant="ghost" className="w-full">
                     Back to Sign In
                   </Button>
@@ -118,7 +118,7 @@ export default function VerifyEmailPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-white" />
         </div>
       }>
