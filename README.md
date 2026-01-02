@@ -163,6 +163,19 @@ pnpm run dev
 
 Open [http://localhost:3000](http://localhost:3000) 🎉
 
+### Default Admin Account
+
+After seeding the database, an admin account is created with the following credentials:
+
+| Field    | Value                |
+| -------- | -------------------- |
+| Email    | `admin@algoloom.com` |
+| Password | `admin123`           |
+| Username | `admin`              |
+| Role     | `ADMIN`              |
+
+> ⚠️ **Important**: Change these credentials immediately in production!
+
 ## 🔒 Security
 
 - **Email Verification**: Required for code submissions (OAuth auto-verified)
