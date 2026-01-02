@@ -137,30 +137,8 @@ export const authConfig: NextAuthConfig = {
       return true;
     },
     async jwt({ token, user }) {
-      // Always fetch fresh isPro and subscription data from database
-      if (token.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: token.email as string },
-          include: {
-            subscription: {
-              select: { plan: true, status: true },
-            },
-          },
-        });
-        if (dbUser) {
-          token.id = dbUser.id;
-          token.role = dbUser.role;
-          token.username = dbUser.username;
-          token.emailVerified = dbUser.emailVerified;
-          token.isPro = dbUser.isPro;
-          token.subscriptionPlan =
-            dbUser.subscription?.status === "ACTIVE"
-              ? dbUser.subscription.plan
-              : null;
-        }
-      }
-      // For credentials provider on initial sign-in, user data comes from authorize()
-      else if (user?.id) {
+      // Only set token data on initial sign-in (no Prisma calls here - Edge compatible)
+      if (user?.id) {
         token.id = user.id;
         token.role = user.role;
         token.username = user.username;
@@ -176,9 +154,35 @@ export const authConfig: NextAuthConfig = {
         session.user.role = token.role;
         session.user.username = token.username;
         session.user.emailVerified = token.emailVerified ?? null;
-        // Admins automatically get Pro access
-        session.user.isPro = token.role === "ADMIN" || (token.isPro ?? false);
-        session.user.subscriptionPlan = token.subscriptionPlan ?? null;
+
+        // Fetch fresh isPro and subscription data from database (Node.js runtime)
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id },
+            select: {
+              isPro: true,
+              role: true,
+              subscription: {
+                select: { plan: true, status: true },
+              },
+            },
+          });
+          if (dbUser) {
+            session.user.isPro = dbUser.role === "ADMIN" || dbUser.isPro;
+            session.user.subscriptionPlan =
+              dbUser.subscription?.status === "ACTIVE"
+                ? dbUser.subscription.plan
+                : null;
+          } else {
+            session.user.isPro =
+              token.role === "ADMIN" || (token.isPro ?? false);
+            session.user.subscriptionPlan = token.subscriptionPlan ?? null;
+          }
+        } catch {
+          // Fallback to token data if DB fetch fails
+          session.user.isPro = token.role === "ADMIN" || (token.isPro ?? false);
+          session.user.subscriptionPlan = token.subscriptionPlan ?? null;
+        }
       }
       return session;
     },
