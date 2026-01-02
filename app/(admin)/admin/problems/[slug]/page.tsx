@@ -1,14 +1,16 @@
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import ProblemForm from "../ProblemForm";
 
 export default async function EditProblemPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
+  const { slug } = await params;
+
   const problem = await prisma.problem.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     include: {
       testCases: {
         orderBy: { orderIndex: "asc" },

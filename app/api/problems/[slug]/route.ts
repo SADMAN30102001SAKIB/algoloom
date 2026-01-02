@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getCurrentUser, requireAdmin } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
 interface UserSubmission {
@@ -14,10 +14,10 @@ interface UserSubmission {
 // GET /api/problems/[slug] - Get single problem details
 export async function GET(
   req: NextRequest,
-  { params }: { params: { slug: string } },
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
 
     const problem = await prisma.problem.findUnique({
       where: { slug },
@@ -41,13 +41,7 @@ export async function GET(
     }
 
     // Check if problem is published (admins can see unpublished problems)
-    const session = await auth();
-    const user = session?.user?.email
-      ? await prisma.user.findUnique({
-          where: { email: session.user.email },
-          select: { role: true },
-        })
-      : null;
+    const user = await getCurrentUser();
     const isAdmin = user?.role === "ADMIN";
 
     if (!problem.publishedAt && !isAdmin) {
@@ -59,7 +53,7 @@ export async function GET(
 
     // Check premium access
     if (problem.isPremium) {
-      if (!session?.user?.email) {
+      if (!user) {
         return NextResponse.json(
           {
             error:
@@ -69,12 +63,7 @@ export async function GET(
         );
       }
 
-      const premiumUser = await prisma.user.findUnique({
-        where: { email: session.user.email },
-        select: { isPro: true },
-      });
-
-      if (!premiumUser?.isPro) {
+      if (!user.isPro) {
         return NextResponse.json(
           { error: "This is a premium problem. Upgrade to Pro to access it." },
           { status: 403 },
@@ -98,43 +87,37 @@ export async function GET(
     let userStatus = null;
     let userSubmissions: UserSubmission[] = [];
 
-    if (session?.user?.email) {
-      const user = await prisma.user.findUnique({
-        where: { email: session.user.email },
-      });
-
-      if (user) {
-        const problemStat = await prisma.problemStat.findUnique({
-          where: {
-            userId_problemId: {
-              userId: user.id,
-              problemId: problem.id,
-            },
-          },
-        });
-
-        userStatus = problemStat?.status || "UNTOUCHED";
-
-        // Get user's recent submissions for this problem
-        userSubmissions = await prisma.submission.findMany({
-          where: {
+    if (user) {
+      const problemStat = await prisma.problemStat.findUnique({
+        where: {
+          userId_problemId: {
             userId: user.id,
             problemId: problem.id,
           },
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 10,
-          select: {
-            id: true,
-            verdict: true,
-            runtime: true,
-            memory: true,
-            language: true,
-            createdAt: true,
-          },
-        });
-      }
+        },
+      });
+
+      userStatus = problemStat?.status || "UNTOUCHED";
+
+      // Get user's recent submissions for this problem
+      userSubmissions = await prisma.submission.findMany({
+        where: {
+          userId: user.id,
+          problemId: problem.id,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 10,
+        select: {
+          id: true,
+          verdict: true,
+          runtime: true,
+          memory: true,
+          language: true,
+          createdAt: true,
+        },
+      });
     }
 
     return NextResponse.json({
@@ -189,30 +172,12 @@ export async function GET(
 // PATCH /api/problems/[slug] - Update problem (ADMIN only)
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { slug: string } },
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
-    const session = await auth();
+    await requireAdmin();
 
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized - Please log in" },
-        { status: 401 },
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user || user.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Forbidden - Admin access required" },
-        { status: 403 },
-      );
-    }
-
-    const { slug } = params;
+    const { slug } = await params;
     const body = await req.json();
 
     const problem = await prisma.problem.findUnique({
@@ -256,30 +221,12 @@ export async function PATCH(
 // DELETE /api/problems/[slug] - Delete problem (ADMIN only)
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { slug: string } },
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
-    const session = await auth();
+    await requireAdmin();
 
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized - Please log in" },
-        { status: 401 },
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user || user.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Forbidden - Admin access required" },
-        { status: 403 },
-      );
-    }
-
-    const { slug } = params;
+    const { slug } = await params;
 
     const problem = await prisma.problem.findUnique({
       where: { slug },

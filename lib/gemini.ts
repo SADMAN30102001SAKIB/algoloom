@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
 export interface HintRequest {
   problemTitle: string;
@@ -21,23 +21,11 @@ export async function generateHint(request: HintRequest): Promise<string> {
 
   try {
     const result = await model.generateContent(prompt);
-    const response = await result.response;
+    const response = result.response;
     return response.text();
   } catch (error) {
     console.error("Gemini API error:", error);
     throw new Error("Failed to generate hint");
-  }
-}
-
-export async function generateHintStream(request: HintRequest) {
-  const prompt = buildHintPrompt(request);
-
-  try {
-    const result = await model.generateContentStream(prompt);
-    return result.stream;
-  } catch (error) {
-    console.error("Gemini streaming error:", error);
-    throw new Error("Failed to generate hint stream");
   }
 }
 
@@ -87,38 +75,4 @@ ${
 }
 
 Generate a helpful, educational hint that respects these constraints:`;
-}
-
-export async function analyzeCodeError(
-  code: string,
-  error: string,
-  language: string,
-): Promise<string> {
-  const prompt = `You are a code debugging assistant. A user's code has failed with an error.
-
-LANGUAGE: ${language}
-
-CODE:
-\`\`\`${language}
-${code}
-\`\`\`
-
-ERROR:
-${error}
-
-Provide a brief, educational explanation of:
-1. What caused this error
-2. How to think about debugging it
-3. General direction to fix (NO complete solution)
-
-Keep response under 150 words and beginner-friendly.`;
-
-  try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
-  } catch (error) {
-    console.error("Error analysis failed:", error);
-    return "Unable to analyze error at this time. Please review your code logic and test cases.";
-  }
 }

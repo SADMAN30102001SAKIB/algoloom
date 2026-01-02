@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 
 interface TestCaseInput {
   input: string;
@@ -12,11 +12,7 @@ interface TestCaseInput {
 // Create new problem
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    await requireAdmin();
 
     const data = await req.json();
 

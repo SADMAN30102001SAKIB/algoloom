@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
 export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } },
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const submission = await prisma.submission.findUnique({
       where: { id },
@@ -60,15 +60,7 @@ export async function GET(
     }
 
     // Check if user can view this submission
-    const session = await auth();
-
-    // Get the current user to properly check ownership
-    let currentUser = null;
-    if (session?.user?.email) {
-      currentUser = await prisma.user.findUnique({
-        where: { email: session.user.email },
-      });
-    }
+    const currentUser = await getCurrentUser();
 
     const isOwner = currentUser && submission.userId === currentUser.id;
     const isAdmin = currentUser?.role === "ADMIN";
@@ -119,16 +111,20 @@ export async function GET(
         },
         select: {
           solvedAt: true,
+          attempts: true,
         },
       });
 
-      // If solvedAt exists and is within 5 seconds of submission time, this was the first solve
+      // Check if this submission was the first accepted submission
+      // solvedAt is set to match the first solve's submission.createdAt
+      // So if they match, this submission earned XP
       if (problemStat?.solvedAt) {
         const timeDiff = Math.abs(
           problemStat.solvedAt.getTime() - submission.createdAt.getTime(),
         );
-        if (timeDiff < 5000) {
-          // 5 second window
+
+        // Timestamps should match exactly, but allow 1s buffer for safety
+        if (timeDiff < 1000) {
           const difficultyXP = { EASY: 10, MEDIUM: 20, HARD: 30 };
           xpEarned =
             difficultyXP[
@@ -137,6 +133,30 @@ export async function GET(
         }
       }
     }
+
+    // Get achievements unlocked around the time of this submission (within 30 seconds)
+    // This catches achievements awarded by the background processor
+    const recentAchievements = isComplete
+      ? await prisma.userAchievement.findMany({
+          where: {
+            userId: submission.userId,
+            unlockedAt: {
+              gte: new Date(submission.createdAt.getTime() - 5000), // 5s before
+              lte: new Date(submission.createdAt.getTime() + 30000), // 30s after
+            },
+          },
+          include: {
+            achievement: {
+              select: {
+                id: true,
+                name: true,
+                icon: true,
+                xpReward: true,
+              },
+            },
+          },
+        })
+      : [];
 
     return NextResponse.json({
       success: true,
@@ -176,6 +196,12 @@ export async function GET(
         expectedOutput: tr.expectedOutput,
         errorMessage: tr.errorMessage,
         statusId: tr.statusId,
+      })),
+      unlockedAchievements: recentAchievements.map(ua => ({
+        id: ua.achievement.id,
+        name: ua.achievement.name,
+        icon: ua.achievement.icon,
+        xpReward: ua.achievement.xpReward,
       })),
     });
   } catch (error) {

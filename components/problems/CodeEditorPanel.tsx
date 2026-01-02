@@ -1,6 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useRef } from "react";
+import type { CodeEditorRef } from "@/components/editor/CodeEditor";
 
 const CodeEditor = dynamic(
   () => import("@/components/editor/CodeEditor").then(mod => mod.CodeEditor),
@@ -37,6 +39,11 @@ export function CodeEditorPanel({
   onSubmit,
   onShowIOGuide,
 }: CodeEditorPanelProps) {
+  const editorRef = useRef<CodeEditorRef>(null);
+
+  const handleFormat = () => {
+    editorRef.current?.formatDocument();
+  };
   return (
     <>
       {/* Header with Language Selector and I/O Guide */}
@@ -68,6 +75,24 @@ export function CodeEditorPanel({
             </svg>
             I/O Guide
           </button>
+          <button
+            onClick={handleFormat}
+            className="px-3 py-1.5 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 rounded text-purple-400 text-sm font-medium transition flex items-center gap-2"
+            title="Format Code (Shift+Alt+F)">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h7"
+              />
+            </svg>
+            Format
+          </button>
         </div>
         <button
           onClick={onSubmit}
@@ -85,6 +110,7 @@ export function CodeEditorPanel({
           minHeight: 0,
         }}>
         <CodeEditor
+          ref={editorRef}
           defaultValue={code}
           onChange={value => onCodeChange(value || "")}
           language={

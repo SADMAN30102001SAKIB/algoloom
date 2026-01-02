@@ -1,43 +1,46 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
-// Rate limiting storage (use Redis/Upstash in production)
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+// Initialize Upstash Redis for distributed rate limiting
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL || "",
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || "",
+});
 
-// Clean up expired entries every 5 minutes to prevent memory leak
-setInterval(
-  () => {
-    const now = Date.now();
-    rateLimitMap.forEach((value, key) => {
-      if (now > value.resetTime) {
-        rateLimitMap.delete(key);
-      }
-    });
-  },
-  5 * 60 * 1000,
-);
-
-function rateLimit(
-  identifier: string,
-  limit: number,
-  windowMs: number,
-): boolean {
-  const now = Date.now();
-  const record = rateLimitMap.get(identifier);
-
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(identifier, { count: 1, resetTime: now + windowMs });
-    return true;
-  }
-
-  if (record.count >= limit) {
-    return false;
-  }
-
-  record.count++;
-  return true;
-}
+// Create rate limiters for different endpoints
+const rateLimiters = {
+  // Default: 100 requests per minute
+  default: new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(100, "1 m"),
+    analytics: true,
+    prefix: "ratelimit:default",
+  }),
+  // Submissions: 1 per minute
+  submission: new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(1, "1 m"),
+    analytics: true,
+    prefix: "ratelimit:submission",
+  }),
+  // Hints: 5 per minute
+  hints: new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(5, "1 m"),
+    analytics: true,
+    prefix: "ratelimit:hints",
+  }),
+  // Problems: 1000 per minute
+  problems: new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(1000, "1 m"),
+    analytics: true,
+    prefix: "ratelimit:problems",
+  }),
+};
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -52,28 +55,53 @@ export async function middleware(request: NextRequest) {
     "camera=(), microphone=(), geolocation=()",
   );
 
-  // API rate limiting
+  // API rate limiting with Upstash Redis
   if (pathname.startsWith("/api/")) {
-    const identifier = request.ip || "anonymous";
+    // Get IP from headers (Next.js 15 removed request.ip)
+    const forwardedFor = request.headers.get("x-forwarded-for");
+    const realIp = request.headers.get("x-real-ip");
+    const identifier =
+      forwardedFor?.split(",")[0]?.trim() || realIp || "anonymous";
 
-    // Different limits for different endpoints
-    let limit = 100; // requests per minute
-    const windowMs = 60 * 1000; // 1 minute
+    // Select appropriate rate limiter based on endpoint
+    let ratelimiter = rateLimiters.default;
 
     if (pathname.startsWith("/api/submit-stream")) {
-      limit = 1; // 1 submission per minute
+      ratelimiter = rateLimiters.submission;
     } else if (pathname.startsWith("/api/hints")) {
-      limit = 5; // 5 hints per minute
+      ratelimiter = rateLimiters.hints;
     } else if (pathname.startsWith("/api/problems")) {
-      limit = 30; // 30 problem fetches per minute
+      ratelimiter = rateLimiters.problems;
     }
 
-    if (!rateLimit(identifier, limit, windowMs)) {
+    // Check rate limit (distributed across all edge instances)
+    const { success, limit, reset, remaining } =
+      await ratelimiter.limit(identifier);
+
+    if (!success) {
       return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
-        { status: 429, headers: response.headers },
+        {
+          error: "Too many requests. Please try again later.",
+          limit,
+          remaining,
+          reset: new Date(reset).toISOString(),
+        },
+        {
+          status: 429,
+          headers: {
+            ...Object.fromEntries(response.headers),
+            "X-RateLimit-Limit": limit.toString(),
+            "X-RateLimit-Remaining": remaining.toString(),
+            "X-RateLimit-Reset": reset.toString(),
+          },
+        },
       );
     }
+
+    // Add rate limit headers to successful responses
+    response.headers.set("X-RateLimit-Limit", limit.toString());
+    response.headers.set("X-RateLimit-Remaining", remaining.toString());
+    response.headers.set("X-RateLimit-Reset", reset.toString());
   }
 
   // Admin routes - require authentication and ADMIN role

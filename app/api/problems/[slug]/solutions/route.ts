@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 
 // GET /api/problems/[slug]/solutions - Get best runtime and memory solutions
 export async function GET(
   req: NextRequest,
-  { params }: { params: { slug: string } },
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
 
     // Find the problem
     const problem = await prisma.problem.findUnique({
@@ -21,13 +21,7 @@ export async function GET(
     }
 
     // Check if problem is published (admins can see solutions for unpublished problems)
-    const session = await auth();
-    const user = session?.user?.email
-      ? await prisma.user.findUnique({
-          where: { email: session.user.email },
-          select: { role: true },
-        })
-      : null;
+    const user = await getCurrentUser();
     const isAdmin = user?.role === "ADMIN";
 
     if (!problem.publishedAt && !isAdmin) {

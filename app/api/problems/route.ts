@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getCurrentUser, requireAdmin } from "@/lib/auth";
 
 import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
@@ -27,18 +27,9 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "20");
 
     // Get current user for status filtering
-    const session = await auth();
-    let userId: string | null = null;
-    let isAdmin = false;
-
-    if (session?.user?.email) {
-      const user = await prisma.user.findUnique({
-        where: { email: session.user.email },
-        select: { id: true, role: true },
-      });
-      userId = user?.id || null;
-      isAdmin = user?.role === "ADMIN";
-    }
+    const user = await getCurrentUser();
+    const userId = user?.id || null;
+    const isAdmin = user?.role === "ADMIN";
 
     // Build where clause
     const where: Prisma.ProblemWhereInput = {};
@@ -207,25 +198,7 @@ export async function GET(req: NextRequest) {
 // POST /api/problems - Create new problem (ADMIN only)
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized - Please log in" },
-        { status: 401 },
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user || user.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Forbidden - Admin access required" },
-        { status: 403 },
-      );
-    }
+    await requireAdmin();
 
     const body = await req.json();
     const {

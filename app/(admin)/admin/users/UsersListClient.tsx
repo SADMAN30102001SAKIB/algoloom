@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Search, Filter } from "lucide-react";
 
 interface User {
   id: string;
   name: string | null;
   email: string | null;
+  username: string;
   role: string;
   xp: number;
   level: number;
@@ -24,6 +27,51 @@ interface UsersListClientProps {
 export default function UsersListClient({ users }: UsersListClientProps) {
   const router = useRouter();
   const [deleting, setDeleting] = useState<string | null>(null);
+
+  // Filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("ALL");
+  const [sortBy, setSortBy] = useState<"createdAt" | "xp" | "submissions">(
+    "createdAt",
+  );
+
+  // Filtered and sorted users
+  const filteredUsers = useMemo(() => {
+    let result = [...users];
+
+    // Filter by search
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        user =>
+          user.name?.toLowerCase().includes(query) ||
+          user.email?.toLowerCase().includes(query) ||
+          user.username.toLowerCase().includes(query),
+      );
+    }
+
+    // Filter by role
+    if (roleFilter !== "ALL") {
+      result = result.filter(user => user.role === roleFilter);
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case "xp":
+          return b.xp - a.xp;
+        case "submissions":
+          return b._count.submissions - a._count.submissions;
+        case "createdAt":
+        default:
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+      }
+    });
+
+    return result;
+  }, [users, searchQuery, roleFilter, sortBy]);
 
   const handleDelete = async (userId: string) => {
     if (!confirm("Are you sure you want to delete this user?")) return;
@@ -75,7 +123,50 @@ export default function UsersListClient({ users }: UsersListClientProps) {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-white">User Management</h1>
-          <div className="text-slate-400">Total: {users.length} users</div>
+          <div className="text-slate-400">
+            Showing {filteredUsers.length} of {users.length} users
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 mb-6">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-slate-400" />
+              <span className="text-sm text-slate-400">Filters:</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Search className="w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search name, email, username..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-1.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+              />
+            </div>
+
+            <select
+              value={roleFilter}
+              onChange={e => setRoleFilter(e.target.value)}
+              className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="ALL">All Roles</option>
+              <option value="USER">Users</option>
+              <option value="ADMIN">Admins</option>
+            </select>
+
+            <select
+              value={sortBy}
+              onChange={e =>
+                setSortBy(e.target.value as "createdAt" | "xp" | "submissions")
+              }
+              className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="createdAt">Sort by: Newest</option>
+              <option value="xp">Sort by: XP</option>
+              <option value="submissions">Sort by: Submissions</option>
+            </select>
+          </div>
         </div>
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden">
@@ -103,7 +194,7 @@ export default function UsersListClient({ users }: UsersListClientProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-700">
-              {users.map(user => (
+              {filteredUsers.map(user => (
                 <tr key={user.id} className="hover:bg-slate-800/30">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
@@ -137,7 +228,12 @@ export default function UsersListClient({ users }: UsersListClientProps) {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm space-x-3">
+                    <Link
+                      href={`/profile/${user.username}`}
+                      className="text-emerald-400 hover:text-emerald-300">
+                      View
+                    </Link>
                     <button
                       onClick={() => handleDelete(user.id)}
                       disabled={deleting === user.id}

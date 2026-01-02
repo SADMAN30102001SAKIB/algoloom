@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import confetti from "canvas-confetti";
@@ -56,7 +56,12 @@ interface Problem {
   userSubmissions?: Submission[];
 }
 
-export default function ProblemPage({ params }: { params: { slug: string } }) {
+export default function ProblemPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = use(params);
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -73,14 +78,14 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
   const [language, setLanguage] = useState("PYTHON");
   const [showIOGuide, setShowIOGuide] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "description" | "submissions" | "solutions"
+    "description" | "ai-hints" | "submissions" | "solutions"
   >("description");
   const [isOutputCollapsed, setIsOutputCollapsed] = useState(true);
   const [submissionsLoading, setSubmissionsLoading] = useState(false);
 
   // Use submission hook for all submission logic
   const { testCaseResults, currentTestIndex, summary, submitting, submitCode } =
-    useSubmission(params.slug);
+    useSubmission(slug);
 
   // Trigger confetti on ACCEPTED
   useEffect(() => {
@@ -110,7 +115,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
   useEffect(() => {
     const fetchProblem = async () => {
       try {
-        const response = await fetch(`/api/problems/${params.slug}`);
+        const response = await fetch(`/api/problems/${slug}`);
         const data = await response.json();
 
         if (response.status === 403) {
@@ -140,7 +145,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
     };
 
     fetchProblem();
-  }, [params.slug]);
+  }, [slug]);
 
   const handleSubmit = () => {
     submitCode(code, language, problem?.timeLimit, problem?.memoryLimit);
@@ -151,7 +156,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
 
     setSubmissionsLoading(true);
     try {
-      const response = await fetch(`/api/problems/${params.slug}/submissions`);
+      const response = await fetch(`/api/problems/${slug}/submissions`);
       const data = await response.json();
 
       if (data.success) {
@@ -189,7 +194,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
   };
 
   const handleTabChange = (
-    tab: "description" | "submissions" | "solutions",
+    tab: "description" | "ai-hints" | "submissions" | "solutions",
   ) => {
     setActiveTab(tab);
     // Refetch submissions when switching to submissions tab
@@ -201,7 +206,18 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
   if (status === "loading" || loading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+        <div className="text-center">
+          <div className="relative w-20 h-20 mx-auto mb-6">
+            <div className="absolute inset-0 border-4 border-slate-700 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-transparent border-t-cyan-500 border-r-purple-500 rounded-full animate-spin"></div>
+          </div>
+          <div className="text-white text-xl font-medium">
+            Loading problem...
+          </div>
+          <div className="text-slate-500 text-sm mt-2">
+            Preparing your coding environment
+          </div>
+        </div>
       </div>
     );
   }
@@ -293,6 +309,8 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
           onSubmissionDeleted={handleSubmissionDeleted}
           submissionsLoading={submissionsLoading}
           isAuthenticated={!!session}
+          currentCode={code}
+          currentLanguage={language}
         />
 
         {/* Right Panel - Code Editor */}

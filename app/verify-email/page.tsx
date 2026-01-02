@@ -38,10 +38,8 @@ function VerifyEmailContent() {
           setStatus("success");
           setMessage("Email verified successfully! You can now sign in.");
 
-          // Update session to refresh emailVerified status
-          if (update) {
-            await update();
-          }
+          // Trigger session refresh to update emailVerified status
+          await update?.();
         } else {
           setStatus("error");
           setMessage(data.error || "Verification failed");

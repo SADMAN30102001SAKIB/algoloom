@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import DailyChallengeBanner from "@/components/DailyChallengeBanner";
 
 interface Problem {
   id: string;
@@ -146,28 +147,56 @@ function ProblemsPageContent() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+          <div className="text-white text-xl font-medium">Loading...</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-slate-950">
       {/* Header */}
-      <header className="border-b border-slate-700/50 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
+      <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link
-            href="/"
-            className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-            AlgoLoom
-          </Link>
+          <div className="flex items-center gap-8">
+            <Link
+              href="/"
+              className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent hover:from-cyan-300 hover:to-purple-300 transition-all">
+              AlgoLoom
+            </Link>
+            <nav className="hidden md:flex items-center gap-6">
+              <Link
+                href="/problems"
+                className="text-slate-300 hover:text-white transition font-medium">
+                Problems
+              </Link>
+              <Link
+                href="/leaderboard"
+                className="text-slate-300 hover:text-white transition font-medium">
+                Leaderboard
+              </Link>
+              <Link
+                href="/friends"
+                className="text-slate-300 hover:text-white transition font-medium">
+                Friends
+              </Link>
+              <Link
+                href="/submissions"
+                className="text-slate-300 hover:text-white transition font-medium">
+                Submissions
+              </Link>
+            </nav>
+          </div>
           <div className="flex items-center gap-4">
             {session?.user ? (
               <>
-                <div className="flex flex-col items-end">
-                  <span className="text-slate-300">
-                    Welcome,{" "}
+                <Link
+                  href={`/profile/${session.user.username}`}
+                  className="flex flex-col items-end hover:opacity-80 transition">
+                  <span className="text-slate-200 font-medium">
                     {session.user.name || session.user.username || "User"}
                   </span>
                   {session.user.emailVerified ? (
@@ -199,10 +228,10 @@ function ProblemsPageContent() {
                       Unverified
                     </span>
                   )}
-                </div>
+                </Link>
                 <Link
                   href="/api/auth/signout"
-                  className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition border border-red-500/20">
+                  className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition border border-red-500/20 font-medium">
                   Sign Out
                 </Link>
               </>
@@ -210,7 +239,7 @@ function ProblemsPageContent() {
               <>
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-slate-300 hover:text-white transition">
+                  className="px-4 py-2 text-slate-300 hover:text-white transition font-medium">
                   Sign In
                 </Link>
                 <Link
@@ -225,14 +254,23 @@ function ProblemsPageContent() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Daily Challenge Banner */}
+        <div className="mb-8">
+          <DailyChallengeBanner />
+        </div>
+
         {/* Title */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Problem Set</h1>
-          <p className="text-slate-400">Choose a problem to start solving</p>
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent mb-3">
+            Problem Set
+          </h1>
+          <p className="text-slate-400 text-lg">
+            Master algorithms, one problem at a time
+          </p>
         </div>
 
         {/* Filters */}
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 mb-6">
+        <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-xl p-6 mb-8 shadow-xl">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
@@ -243,7 +281,7 @@ function ProblemsPageContent() {
                 onChange={e =>
                   setFilter({ ...filter, difficulty: e.target.value })
                 }
-                className="w-full px-4 py-2 bg-slate-900/50 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition">
                 <option value="">All Difficulties</option>
                 <option value="EASY">Easy</option>
                 <option value="MEDIUM">Medium</option>
@@ -258,7 +296,7 @@ function ProblemsPageContent() {
               <select
                 value={filter.status}
                 onChange={e => setFilter({ ...filter, status: e.target.value })}
-                className="w-full px-4 py-2 bg-slate-900/50 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
                 <option value="">All Status</option>
                 <option value="SOLVED">Solved</option>
                 <option value="ATTEMPTED">Attempted</option>
@@ -275,21 +313,22 @@ function ProblemsPageContent() {
                 placeholder="e.g., array, string"
                 value={filter.tags}
                 onChange={e => setFilter({ ...filter, tags: e.target.value })}
-                className="w-full px-4 py-2 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
               />
             </div>
           </div>
         </div>
 
         {/* Problems Table */}
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl overflow-hidden">
+        <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-xl overflow-hidden shadow-xl">
           {loading ? (
-            <div className="p-12 text-center text-slate-400">
+            <div className="p-16 text-center text-slate-400">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
               Loading problems...
             </div>
           ) : problems.length === 0 ? (
-            <div className="p-12 text-center">
-              <p className="text-slate-400 mb-4">No problems found</p>
+            <div className="p-16 text-center">
+              <p className="text-slate-400 mb-4 text-lg">No problems found</p>
               <p className="text-sm text-slate-500">
                 Try adjusting your filters or check back later
               </p>
@@ -297,75 +336,75 @@ function ProblemsPageContent() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-slate-900/50 border-b border-slate-700">
+                <thead className="bg-slate-800/80 border-b border-slate-700">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
                       Title
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
                       Difficulty
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
                       Acceptance
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
                       Tags
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-700">
+                <tbody className="divide-y divide-slate-800">
                   {problems.map(problem => (
                     <tr
                       key={problem.id}
-                      className="hover:bg-slate-700/30 transition cursor-pointer"
+                      className="hover:bg-slate-800/40 transition cursor-pointer group"
                       onClick={() => router.push(`/problems/${problem.slug}`)}>
                       <td className="px-6 py-4 whitespace-nowrap text-2xl">
                         {getStatusIcon(problem.userStatus)}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <span className="text-white font-medium hover:text-purple-400 transition">
+                          <span className="text-white font-medium group-hover:text-cyan-400 transition">
                             {problem.title}
                           </span>
                           {problem.isPremium && (
-                            <span className="text-xs bg-yellow-500/10 text-yellow-400 px-2 py-1 rounded border border-yellow-500/20">
+                            <span className="text-xs bg-yellow-500/10 text-yellow-400 px-2 py-1 rounded border border-yellow-500/20 font-medium">
                               Premium
                             </span>
                           )}
                           {problem.hintsUsed && (
                             <span
-                              className="text-xs bg-blue-500/10 text-blue-400 px-2 py-1 rounded border border-blue-500/20"
+                              className="text-xs bg-blue-500/10 text-blue-400 px-2 py-1 rounded border border-blue-500/20 font-medium"
                               title="You used hints on this problem">
-                              💡 Hint Used
+                              💡 Hint
                             </span>
                           )}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium border ${getDifficultyColor(
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${getDifficultyColor(
                             problem.difficulty,
                           )}`}>
                           {problem.difficulty}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-slate-300">
+                      <td className="px-6 py-4 whitespace-nowrap text-slate-300 font-medium">
                         {problem.acceptanceRate.toFixed(1)}%
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1.5">
                           {problem.tags.slice(0, 3).map((tag, idx) => (
                             <span
                               key={idx}
-                              className="text-xs bg-slate-700/50 text-slate-300 px-2 py-1 rounded">
+                              className="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700 font-medium">
                               {tag}
                             </span>
                           ))}
                           {problem.tags.length > 3 && (
-                            <span className="text-xs text-slate-500">
+                            <span className="text-xs text-slate-500 font-medium">
                               +{problem.tags.length - 3}
                             </span>
                           )}
@@ -381,16 +420,18 @@ function ProblemsPageContent() {
 
         {/* Pagination */}
         {!loading && totalPages > 1 && (
-          <div className="mt-6 flex items-center justify-between">
-            <div className="text-sm text-slate-400">
-              Showing {startIndex + 1} to {endIndex} of {totalProblems} problems
+          <div className="mt-8 flex items-center justify-between bg-slate-900/30 border border-slate-800 rounded-xl p-4">
+            <div className="text-sm text-slate-400 font-medium">
+              Showing <span className="text-white">{startIndex + 1}</span> to{" "}
+              <span className="text-white">{endIndex}</span> of{" "}
+              <span className="text-white">{totalProblems}</span> problems
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white hover:bg-slate-700/50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                className="px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white hover:bg-slate-700/50 hover:border-cyan-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium">
                 Previous
               </button>
 
@@ -400,7 +441,7 @@ function ProblemsPageContent() {
                   <>
                     <button
                       onClick={() => goToPage(1)}
-                      className="w-10 h-10 rounded-lg bg-slate-800/50 border border-slate-700 text-white hover:bg-slate-700/50 transition">
+                      className="w-10 h-10 rounded-lg bg-slate-800/50 border border-slate-700 text-white hover:bg-slate-700/50 hover:border-cyan-500/50 transition font-medium">
                       1
                     </button>
                     {currentPage > 4 && (
@@ -424,10 +465,10 @@ function ProblemsPageContent() {
                     <button
                       key={page}
                       onClick={() => goToPage(page)}
-                      className={`w-10 h-10 rounded-lg border transition ${
+                      className={`w-10 h-10 rounded-lg border transition font-medium ${
                         page === currentPage
-                          ? "bg-purple-600 border-purple-500 text-white"
-                          : "bg-slate-800/50 border-slate-700 text-white hover:bg-slate-700/50"
+                          ? "bg-gradient-to-r from-cyan-600 to-purple-600 border-cyan-500 text-white shadow-lg shadow-cyan-500/20"
+                          : "bg-slate-800/50 border-slate-700 text-white hover:bg-slate-700/50 hover:border-purple-500/50"
                       }`}>
                       {page}
                     </button>
@@ -441,7 +482,7 @@ function ProblemsPageContent() {
                     )}
                     <button
                       onClick={() => goToPage(totalPages)}
-                      className="w-10 h-10 rounded-lg bg-slate-800/50 border border-slate-700 text-white hover:bg-slate-700/50 transition">
+                      className="w-10 h-10 rounded-lg bg-slate-800/50 border border-slate-700 text-white hover:bg-slate-700/50 hover:border-cyan-500/50 transition font-medium">
                       {totalPages}
                     </button>
                   </>
@@ -451,7 +492,7 @@ function ProblemsPageContent() {
               <button
                 onClick={() => goToPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white hover:bg-slate-700/50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                className="px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white hover:bg-slate-700/50 hover:border-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium">
                 Next
               </button>
             </div>
@@ -466,8 +507,11 @@ export default function ProblemsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-          <div className="text-white text-xl">Loading...</div>
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+            <div className="text-white text-xl font-medium">Loading...</div>
+          </div>
         </div>
       }>
       <ProblemsPageContent />

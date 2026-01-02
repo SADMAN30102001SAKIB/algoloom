@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 // Helper function to get human-readable status description
 function getStatusDescription(statusId?: number): string {
@@ -127,13 +128,16 @@ export function useSubmission(problemSlug: string) {
           // This ensures we don't miss any results due to polling timing issues
           if (pollData.testResults && pollData.testResults.length > 0) {
             const sortedResults = pollData.testResults
-              .map((result: any) => ({
+              .map((result: TestCaseResult & { errorMessage?: string }) => ({
                 ...result,
                 stderr: result.errorMessage,
                 compileOutput: result.errorMessage,
                 statusDescription: getStatusDescription(result.statusId),
               }))
-              .sort((a: any, b: any) => a.testCaseIndex - b.testCaseIndex);
+              .sort(
+                (a: TestCaseResult, b: TestCaseResult) =>
+                  a.testCaseIndex - b.testCaseIndex,
+              );
 
             setTestCaseResults(sortedResults);
             setCurrentTestIndex(pollData.testResults.length);
@@ -156,6 +160,25 @@ export function useSubmission(problemSlug: string) {
               newLevel: pollData.level || 1,
             });
 
+            // Show achievement toasts
+            if (pollData.unlockedAchievements?.length > 0) {
+              pollData.unlockedAchievements.forEach(
+                (achievement: {
+                  name: string;
+                  icon: string;
+                  xpReward: number;
+                }) => {
+                  toast.success(
+                    `${achievement.icon} Achievement Unlocked: ${achievement.name}!`,
+                    {
+                      description: `+${achievement.xpReward} XP`,
+                      duration: 5000,
+                    },
+                  );
+                },
+              );
+            }
+
             setCurrentTestIndex(-1);
             setSubmitting(false);
             return;
@@ -163,7 +186,7 @@ export function useSubmission(problemSlug: string) {
 
           // Continue polling
           setTimeout(poll, pollInterval);
-        } catch (pollError: any) {
+        } catch (pollError) {
           console.error("Polling error:", pollError);
           setSummary({
             verdict: "RUNTIME_ERROR",
@@ -173,14 +196,17 @@ export function useSubmission(problemSlug: string) {
             totalTestCases: data.totalTestCases || 0,
             xpEarned: 0,
             newLevel: 1,
-            errorMessage: pollError?.message || "Submission failed",
+            errorMessage:
+              pollError instanceof Error
+                ? pollError.message
+                : "Submission failed",
           });
           setSubmitting(false);
         }
       };
 
       poll();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Submission error:", error);
       setSummary({
         verdict: "RUNTIME_ERROR",
@@ -190,7 +216,8 @@ export function useSubmission(problemSlug: string) {
         totalTestCases: 0,
         xpEarned: 0,
         newLevel: 1,
-        errorMessage: error?.message || "Submission failed",
+        errorMessage:
+          error instanceof Error ? error.message : "Submission failed",
       });
       setSubmitting(false);
     }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 
 interface TestCaseInput {
   input: string;
@@ -12,26 +12,23 @@ interface TestCaseInput {
 // Update problem
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    await requireAdmin();
+    const { id } = await params;
 
     const data = await req.json();
     const { testCases, examples, ...problemData } = data;
 
     // Delete existing test cases
     await prisma.testCase.deleteMany({
-      where: { problemId: params.id },
+      where: { problemId: id },
     });
 
     // Update problem with new test cases
     const problem = await prisma.problem.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...problemData,
         examples: examples || [],
@@ -69,17 +66,14 @@ export async function PUT(
 // Delete problem
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    await requireAdmin();
+    const { id } = await params;
 
     await prisma.problem.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ success: true });

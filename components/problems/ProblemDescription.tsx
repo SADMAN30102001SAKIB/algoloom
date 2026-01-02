@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { AIHintsTab } from "./AIHintsTab";
 
 interface Submission {
   id: string;
@@ -37,6 +38,7 @@ interface SolutionData {
 }
 
 interface Problem {
+  id: string;
   title: string;
   slug: string;
   difficulty: string;
@@ -61,11 +63,15 @@ interface Problem {
 
 interface ProblemDescriptionProps {
   problem: Problem;
-  activeTab: "description" | "submissions" | "solutions";
-  onTabChange: (tab: "description" | "submissions" | "solutions") => void;
+  activeTab: "description" | "ai-hints" | "submissions" | "solutions";
+  onTabChange: (
+    tab: "description" | "ai-hints" | "submissions" | "solutions",
+  ) => void;
   onSubmissionDeleted?: (submissionId: string) => void;
   submissionsLoading?: boolean;
   isAuthenticated?: boolean;
+  currentCode?: string;
+  currentLanguage?: string;
 }
 
 export function ProblemDescription({
@@ -75,6 +81,8 @@ export function ProblemDescription({
   onSubmissionDeleted,
   submissionsLoading = false,
   isAuthenticated = false,
+  currentCode = "",
+  currentLanguage = "PYTHON",
 }: ProblemDescriptionProps) {
   return (
     <div className="w-1/2 border-r border-slate-700 overflow-y-auto">
@@ -85,6 +93,11 @@ export function ProblemDescription({
             active={activeTab === "description"}
             onClick={() => onTabChange("description")}>
             Description
+          </TabButton>
+          <TabButton
+            active={activeTab === "ai-hints"}
+            onClick={() => onTabChange("ai-hints")}>
+            🤖 AI Hints
           </TabButton>
           <TabButton
             active={activeTab === "submissions"}
@@ -100,6 +113,13 @@ export function ProblemDescription({
 
         {activeTab === "description" && (
           <DescriptionTab problem={problem} isAuthenticated={isAuthenticated} />
+        )}
+        {activeTab === "ai-hints" && (
+          <AIHintsTab
+            problemId={problem.id}
+            currentCode={currentCode}
+            currentLanguage={currentLanguage}
+          />
         )}
         {activeTab === "submissions" && (
           <SubmissionsTab

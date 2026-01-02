@@ -18,6 +18,7 @@ AlgoLoom is a modern LeetCode-style platform that combines competitive programmi
 - **XP & Leveling**: Earn XP for every problem solved
 - **Achievements**: Unlock badges for milestones (first solve, streaks, etc.)
 - **Streaks**: Maintain daily solving streaks for bonus XP
+- **Daily Challenges**: A new challenge every day with bonus XP rewards
 - **Leaderboard**: Compete globally with other developers
 - **Difficulty Tiers**: Easy, Medium, Hard problems with varying rewards
 
@@ -26,14 +27,14 @@ AlgoLoom is a modern LeetCode-style platform that combines competitive programmi
 - **Monaco Editor** integration (VS Code experience)
 - Support for **4 languages**: Python, C++, Java, JavaScript
 - Syntax highlighting, IntelliSense, and code completion
-- Auto-formatting and error detection
+- Auto-formatting
 
 ### 🔍 Problem Library
 
-- **~30+ problems** from top tech companies
+- **~30+ problems** curated for algorithmic practice
 - **Public Viewing**: Browse problems and submissions without login
 - **Protected Submissions**: Email verification required to submit solutions
-- Filter by **difficulty**, **tags**, **companies**, and **status**
+- Filter by **difficulty**, **tags**, and **status**
 - **URL State Persistence**: Pagination and filters synced with URL
 - Real-time code execution with **Judge0 API**
 - Detailed test case results and performance metrics
@@ -48,18 +49,33 @@ AlgoLoom is a modern LeetCode-style platform that combines competitive programmi
 - Submission history and acceptance rate
 - Social links (GitHub, LinkedIn, website)
 
+### 👥 Social Features
+
+- **Friend System**: Send, accept, and manage friend requests
+- **Friend Activity Feed**: See when friends solve problems or unlock achievements
+- **Profile Integration**: Add/unfriend directly from user profiles
+
+### 💎 Premium Subscription
+
+- **Stripe Integration**: Secure payment processing
+- **Monthly/Yearly Plans**: Flexible subscription options ($9.99/mo or $79.99/yr)
+- **Premium Problems**: Exclusive problems for Pro users
+- **Billing Portal**: Manage subscription via Stripe Customer Portal
+- **Webhook Handling**: Automatic status updates on payment events
+
 ### 🛡️ Admin Panel
 
-- **Problem Management**: Add, edit, and remove coding problems
-- **User Management**: View user statistics and manage accounts
-- **System Monitoring**: Track platform usage and performance
-- **Content Moderation**: Review and approve user-generated content
+- **Dashboard**: Overview stats (problems, users, submissions, test cases)
+- **Problem Management**: Create, edit, and delete coding problems with test cases
+- **User Management**: View user list with filters (search, role, sort)
+- **Submissions**: View all submissions with filters and code preview
+- **Daily Challenges**: Schedule challenges or let auto-generation handle it
 
 ## 🚀 Tech Stack
 
 ### Frontend
 
-- **Next.js 14** (App Router, Server Components, ISR)
+- **Next.js 15** (App Router, Server Components, React 19)
 - **TypeScript** (strict mode)
 - **Tailwind CSS** (utility-first styling)
 - **shadcn/ui** (Radix UI + custom components)
@@ -72,17 +88,19 @@ AlgoLoom is a modern LeetCode-style platform that combines competitive programmi
 - **Prisma ORM** (type-safe database queries)
 - **PostgreSQL** (Neon.tech serverless DB)
 
-### External Services (All FREE Tiers)
+### External Services
 
 - **Judge0 API** (code execution via RapidAPI)
-- **Google Gemini 1.5 Flash** (AI hints)
+- **Google Gemini 3 Flash** (AI hints)
+- **Upstash Redis** (distributed rate limiting - 10k requests/day free)
 - **Resend** (email verification - 100 emails/day free)
+- **Stripe** (subscription payments - test mode available)
 
 ## 📦 Installation
 
 ### Prerequisites
 
-- Node.js 18+ and npm/yarn
+- Node.js 18+ and pnpm
 - PostgreSQL database (or use Neon.tech)
 - API keys (see `.env.example`)
 
@@ -96,7 +114,7 @@ cd algoloom
 ### 2. Install Dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### 3. Setup Environment Variables
@@ -105,29 +123,19 @@ npm install
 cp .env.example .env
 ```
 
-Fill in your `.env` file with:
-
-- `DATABASE_URL` - PostgreSQL connection string
-- `NEXTAUTH_SECRET` - Random secret (`openssl rand -base64 32`)
-- `NEXTAUTH_URL` - Your app URL (e.g., `http://localhost:3000`)
-- `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` - Google OAuth credentials
-- `GITHUB_ID` & `GITHUB_SECRET` - GitHub OAuth credentials
-- `RAPIDAPI_KEY` - Judge0 API key from RapidAPI
-- `GEMINI_API_KEY` - Google Gemini API key
-- `RESEND_API_KEY` - Resend API key for email verification (optional in dev)
-- `EMAIL_FROM` - Sender email address (e.g., `noreply@yourdomain.com`)
+Fill in your `.env` file.
 
 ### 4. Setup Database
 
 ```bash
 # Generate Prisma Client
-npx prisma generate
+pnpm prisma generate
 
 # Run migrations
-npx prisma migrate dev --name init
+pnpm prisma migrate dev --name init
 
 # Seed database with sample data
-npx prisma db seed
+pnpm prisma db seed
 ```
 
 ### 5. Setup Email Verification (Optional for Development)
@@ -147,121 +155,23 @@ For production with actual emails:
    EMAIL_FROM=noreply@yourdomain.com
    ```
 
-See `docs/EMAIL_VERIFICATION.md` for detailed setup guide.
-
 ### 6. Run Development Server
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) 🎉
 
-## 📁 Project Structure
-
-```
-algoloom/
-├── app/                  # Next.js App Router
-│   ├── api/              # API routes
-│   │   ├── achievements/ # Achievement system
-│   │   ├── admin/        # Admin-only endpoints
-│   │   ├── auth/         # NextAuth & email verification
-│   │   ├── companies/    # Company data
-│   │   ├── hints/        # AI hint generation
-│   │   ├── leaderboard/  # Rankings (API only)
-│   │   ├── problems/     # Problem CRUD (public read)
-│   │   ├── submit-stream/# Real-time code submission (protected)
-│   │   ├── submissions/  # Submission history (public read)
-│   │   ├── tags/         # Problem tags
-│   │   └── user/         # User profiles (API only)
-│   ├── (admin)/          # Admin panel routes
-│   │   └── admin/        # Problem & user management
-│   ├── (auth)/           # Authentication routes
-│   │   ├── login/        # Sign in page
-│   │   └── register/     # Sign up page
-│   ├── (dashboard)/      # Public viewing routes
-│   │   ├── problems/     # Problem list & solver
-│   │   └── submissions/  # Submission details
-│   ├── auth/
-│   │   └── callback/     # OAuth callback handler
-│   ├── register-success/ # Post-registration page
-│   ├── verify-email/     # Email verification page
-│   ├── layout.tsx        # Root layout
-│   └── page.tsx          # Landing page
-├── components/           # React components
-│   ├── ui/               # Base components (shadcn/ui)
-│   ├── editor/           # Monaco code editor
-│   ├── problem/          # Problem cards, filters
-│   ├── submission/       # Verdict badges
-│   └── providers/        # React Query, NextAuth
-├── lib/                  # Utility libraries
-│   ├── prisma.ts         # Prisma client
-│   ├── auth.ts           # NextAuth config
-│   ├── email.ts          # Email verification (Resend)
-│   ├── judge0.ts         # Judge0 API client
-│   ├── gemini.ts         # Gemini AI client
-│   └── gamification/     # XP, streaks, achievements
-├── prisma/
-│   ├── schema.prisma     # Database schema
-│   └── seed.ts           # Seed data
-├── middleware.ts         # Rate limiting, auth guards
-├── tailwind.config.ts    # Tailwind configuration
-└── package.json          # Dependencies
-
-```
-
-## 🎯 Usage Guide
-
-### For Users
-
-1. **Browse Problems**: View problems and submissions without login
-2. **Sign Up**: Create account with Google/GitHub (auto-verified) or email
-3. **Verify Email**: Check email for verification link (if using email/password)
-4. **Solve Problems**: Write code in the Monaco editor
-5. **Get Hints**: Stuck? Request AI-powered hints (requires login)
-6. **Submit**: Run against test cases and get instant feedback (requires verified email)
-7. **Track Progress**: View your stats, XP, level, and achievements
-8. **Compete**: Climb the leaderboard by solving more problems
-
-### For Admins
-
-1. **Admin Panel**: Access `/admin` (requires ADMIN role)
-2. **Create Problems**: Add new problems with test cases
-3. **Manage Users**: View user activity and moderate content
-4. **Monitor System**: Track submission stats and API usage
-
-## 🧪 API Endpoints
-
-| Endpoint                              | Method    | Auth Required     | Description                          |
-| ------------------------------------- | --------- | ----------------- | ------------------------------------ |
-| `/api/problems`                       | GET       | No                | List problems with filters           |
-| `/api/problems`                       | POST      | Yes (ADMIN)       | Create problem                       |
-| `/api/problems/[slug]`                | GET       | No                | Get single problem                   |
-| `/api/problems/[slug]/mark-hint-used` | POST      | Yes               | Mark hint as used                    |
-| `/api/submit-stream`                  | POST      | Yes (verified)    | Submit code solution (SSE streaming) |
-| `/api/submissions`                    | GET       | No                | Get submission history               |
-| `/api/submissions/[id]`               | GET       | No                | Get submission details               |
-| `/api/submissions/[id]/delete`        | DELETE    | Yes (owner/admin) | Delete submission                    |
-| `/api/hints`                          | POST      | Yes               | Generate AI hint                     |
-| `/api/leaderboard`                    | GET       | No                | Get global rankings                  |
-| `/api/user/[username]`                | GET       | No                | Get user profile                     |
-| `/api/user/me`                        | GET/PATCH | Yes               | Current user data                    |
-| `/api/achievements`                   | GET       | Yes               | List achievements                    |
-| `/api/admin/problems`                 | GET       | Yes (ADMIN)       | Admin: List all problems             |
-| `/api/admin/users`                    | GET       | Yes (ADMIN)       | Admin: List all users                |
-| `/api/auth/register`                  | POST      | No                | Create account + send verification   |
-| `/api/auth/verify-email`              | POST      | No                | Verify email token                   |
-| `/api/companies`                      | GET       | No                | Get company data                     |
-| `/api/tags`                           | GET       | No                | Get problem tags                     |
-
 ## 🔒 Security
 
 - **Email Verification**: Required for code submissions (OAuth auto-verified)
-- **Rate Limiting**: In-memory rate limiter with cleanup
+- **Distributed Rate Limiting**: Upstash Redis-based (works across all edge instances)
   - Default: 100 requests/min per IP
   - Submissions: 1/min per user
   - Hints: 5/min per user
-  - Problems: 30/min per IP
+  - Problems: 1000/min per IP
+  - Analytics enabled for monitoring
 - **Authentication**: NextAuth.js v5 with JWT sessions (no polling)
 - **Authorization**: Role-based access control (USER/ADMIN)
 - **Public Viewing**: Problems and submissions viewable without auth
@@ -283,22 +193,44 @@ algoloom/
 
 ```bash
 # Build production
-npm run build
+pnpm run build
 
 # Start production server
-npm start
+pnpm start
 ```
 
 ## 📊 Database Schema
 
 See `prisma/schema.prisma` for full schema. Key models:
 
-- **User**: Authentication, gamification stats (xp, streak, level), emailVerified
-- **Problem**: Title, description, test cases, difficulty, isPremium, publishedAt
-- **Submission**: Code, verdict, runtime, memory
-- **Achievement**: Badges and milestones
-- **Hint**: AI-generated hints with rate limiting
+### Core Models (Active)
+
+- **User**: Authentication, gamification stats (xp, streak, level), emailVerified, profile info
+- **Problem**: Title, description, test cases, difficulty, tags, constraints, hints
+- **Submission**: User code submissions with verdict, runtime, memory metrics
+- **TestCase**: Individual test cases for problems (visible and hidden)
+- **TestResult**: Results for each test case in a submission
+- **ProblemStat**: Tracks user progress per problem (attempts, solved status, hints used)
+- **HintLog**: AI-generated hint history with XP costs and prompts
 - **VerificationToken**: Email verification tokens (identifier + token composite key)
+
+### Gamification Models (Active)
+
+- **Leaderboard**: Event-driven ranking system - _Updates automatically on XP changes_
+- **Achievement**: 20+ achievements (milestones, streaks, mastery, speed, etc.) - _Awards automatically on problem solve_
+- **UserAchievement**: Tracks unlocked achievements per user with timestamps
+- **DailyChallenge**: Daily problem challenges with XP bonuses - _Fully implemented with admin scheduling and auto-generation_
+- **Friendship**: Friend system with requests, activity feed - _Fully implemented_
+- **Subscription**: Stripe subscription tracking (plan, status, billing period) - _Fully implemented_
+
+## 💡 Feature Ideas for Future
+
+- [ ] Discussion forum per problem
+- [ ] Video explanations
+- [ ] Contest mode (timed challenges)
+- [ ] Team competitions
+- [ ] Problem difficulty voting
+- [ ] Email notifications for streaks
 
 ## 🤝 Contributing
 

@@ -1,5 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { calculateStreak } from "@/lib/achievements";
+
+/**
+ * Converts timeframe query param to Prisma LeaderboardPeriod enum
+ */
+function getLeaderboardPeriod(timeframe: string) {
+  switch (timeframe) {
+    case "weekly":
+      return "WEEKLY";
+    case "monthly":
+      return "MONTHLY";
+    case "all-time":
+    default:
+      return "ALL_TIME";
+  }
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -8,93 +24,75 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "50");
 
-    let startDate: Date | undefined;
+    const period = getLeaderboardPeriod(timeframe);
 
-    // Calculate date range based on timeframe
-    if (timeframe === "daily") {
-      startDate = new Date();
-      startDate.setHours(0, 0, 0, 0);
-    } else if (timeframe === "weekly") {
-      startDate = new Date();
-      startDate.setDate(startDate.getDate() - 7);
-    } else if (timeframe === "monthly") {
-      startDate = new Date();
-      startDate.setMonth(startDate.getMonth() - 1);
-    }
-
-    // Fetch users with rankings
-    const users = await prisma.user.findMany({
-      where: startDate
-        ? {
-            submissions: {
-              some: {
-                createdAt: {
-                  gte: startDate,
+    // Fetch leaderboard entries from the pre-computed table
+    const entries = await prisma.leaderboard.findMany({
+      where: {
+        period,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            image: true,
+            xp: true,
+            _count: {
+              select: {
+                submissions: true,
+                problemStats: {
+                  where: { solved: true },
                 },
-                verdict: "ACCEPTED",
+                achievements: true,
               },
             },
-          }
-        : undefined,
-      select: {
-        id: true,
-        name: true,
-        username: true,
-        image: true,
-        xp: true,
-        _count: {
-          select: {
-            submissions: true,
-            problemStats: {
-              where: { solved: true },
-            },
-            achievements: true,
           },
         },
       },
-      orderBy: [
-        {
-          xp: "desc",
-        },
-        {
-          problemStats: {
-            _count: "desc",
-          },
-        },
-      ],
+      orderBy: {
+        rank: "asc",
+      },
       skip: (page - 1) * limit,
       take: limit,
     });
 
-    // Calculate level for each user
-    const leaderboard = users.map((user, index) => {
-      const level = Math.floor(Math.sqrt(user.xp / 5)) + 1;
-      const rank = (page - 1) * limit + index + 1;
+    // Transform to match existing response format
+    // Calculate streaks for all users in parallel
+    const streakPromises = entries.map(entry => calculateStreak(entry.user.id));
+    const streaks = await Promise.all(streakPromises);
+
+    const leaderboard = entries.map((entry, index) => {
+      const level = Math.floor(Math.sqrt(entry.user.xp / 5)) + 1;
 
       return {
-        rank,
-        userId: user.id,
-        name: user.name,
-        username: user.username,
-        image: user.image,
-        xp: user.xp,
+        rank: entry.rank,
+        userId: entry.user.id,
+        name: entry.user.name,
+        username: entry.user.username,
+        image: entry.user.image,
+        xp: entry.user.xp,
         level,
-        problemsSolved: user._count.problemStats,
-        totalSubmissions: user._count.submissions,
+        problemsSolved: entry.user._count.problemStats,
+        totalSubmissions: entry.user._count.submissions,
         acceptanceRate:
-          user._count.submissions > 0
+          entry.user._count.submissions > 0
             ? Math.round(
-                (user._count.problemStats / user._count.submissions) * 100,
+                (entry.user._count.problemStats /
+                  entry.user._count.submissions) *
+                  100,
               )
             : 0,
-        currentStreak: 0, // TODO: Calculate streak
-        maxStreak: 0, // TODO: Calculate streak
-        achievementsCount: user._count.achievements,
+        currentStreak: streaks[index],
+        achievementsCount: entry.user._count.achievements,
       };
     });
 
-    // Get total user count for pagination
-    const totalCount = await prisma.user.count();
+    // Get total count for pagination
+    const totalCount = await prisma.leaderboard.count({
+      where: { period },
+    });
 
     return NextResponse.json({
       success: true,
@@ -126,62 +124,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing userId" }, { status: 400 });
     }
 
-    // Get user
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
+    // Get user's leaderboard entry
+    const entry = await prisma.leaderboard.findFirst({
+      where: {
+        userId,
+        period: "ALL_TIME",
+      },
+      select: {
+        rank: true,
+      },
     });
 
-    if (!user) {
+    if (!entry) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Get user's problem count for ranking
-    const userProblemCount = await prisma.problemStat.count({
-      where: { userId: user.id, solved: true },
+    // Get total users on leaderboard
+    const totalUsers = await prisma.leaderboard.count({
+      where: { period: "ALL_TIME" },
     });
-
-    // Count users who rank higher than this user
-    // First, count users with higher XP
-    const higherXpCount = await prisma.user.count({
-      where: {
-        xp: {
-          gt: user.xp,
-        },
-      },
-    });
-
-    // Then count users with same XP but more solved problems
-    const sameXpUsers = await prisma.user.findMany({
-      where: {
-        xp: user.xp,
-        id: {
-          not: user.id, // Exclude current user
-        },
-      },
-      select: {
-        id: true,
-        _count: {
-          select: {
-            problemStats: {
-              where: { solved: true },
-            },
-          },
-        },
-      },
-    });
-
-    const sameXpHigherProblems = sameXpUsers.filter(
-      u => u._count.problemStats > userProblemCount,
-    ).length;
-
-    const rank = higherXpCount + sameXpHigherProblems + 1;
-    const totalUsers = await prisma.user.count();
 
     return NextResponse.json({
       success: true,
-      rank,
+      rank: entry.rank,
       totalUsers,
-      percentile: Math.round(((totalUsers - rank) / totalUsers) * 100),
+      percentile: Math.round(((totalUsers - entry.rank) / totalUsers) * 100),
     });
   } catch (error) {
     console.error("User rank fetch error:", error);

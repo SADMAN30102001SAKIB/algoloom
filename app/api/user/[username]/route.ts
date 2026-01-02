@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { calculateStreak } from "@/lib/achievements";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { username: string } },
+  { params }: { params: Promise<{ username: string }> },
 ) {
   try {
-    const { username } = params;
+    const { username } = await params;
 
     // Find user by username
     const user = await prisma.user.findUnique({
@@ -115,15 +116,15 @@ export async function GET(
       }
     });
 
-    // Get recent activity (last 30 days)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    // Get recent activity (last 365 days for heatmap)
+    const yearAgo = new Date();
+    yearAgo.setDate(yearAgo.getDate() - 365);
 
     const recentSubmissions = await prisma.submission.findMany({
       where: {
         userId: user.id,
         createdAt: {
-          gte: thirtyDaysAgo,
+          gte: yearAgo,
         },
       },
       select: {
@@ -208,6 +209,9 @@ export async function GET(
 
     const rank = higherXpCount + sameXpHigherProblems + 1;
 
+    // Calculate streak
+    const streak = await calculateStreak(user.id);
+
     return NextResponse.json({
       success: true,
       user: {
@@ -228,6 +232,7 @@ export async function GET(
           percentage: Math.round((xpProgress / xpRequired) * 100),
         },
         rank,
+        streak,
         problemsSolved: user._count.problemStats,
         totalSubmissions: user._count.submissions,
         acceptanceRate:

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 interface TestResult {
@@ -41,7 +41,12 @@ interface Submission {
   isComplete?: boolean;
 }
 
-export default function SubmissionPage({ params }: { params: { id: string } }) {
+export default function SubmissionPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
   const router = useRouter();
   const searchParams = useSearchParams();
   const [submission, setSubmission] = useState<Submission | null>(null);
@@ -53,7 +58,7 @@ export default function SubmissionPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     const fetchSubmission = async () => {
       try {
-        const response = await fetch(`/api/submissions/${params.id}`);
+        const response = await fetch(`/api/submissions/${id}`);
         const data = await response.json();
 
         if (data.success) {
@@ -69,7 +74,7 @@ export default function SubmissionPage({ params }: { params: { id: string } }) {
     };
 
     fetchSubmission();
-  }, [params.id]);
+  }, [id]);
 
   const getVerdictColor = (verdict: string) => {
     switch (verdict) {

@@ -38,6 +38,16 @@ export default async function AdminLayout({
                   className="text-slate-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                   Users
                 </Link>
+                <Link
+                  href="/admin/submissions"
+                  className="text-slate-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                  Submissions
+                </Link>
+                <Link
+                  href="/admin/daily-challenges"
+                  className="text-slate-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                  Daily Challenges
+                </Link>
               </div>
             </div>
             <Link href="/" className="text-slate-400 hover:text-white text-sm">

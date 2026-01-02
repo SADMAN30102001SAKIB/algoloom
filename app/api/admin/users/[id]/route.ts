@@ -1,21 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth";
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    await requireAdmin();
+    const { id } = await params;
 
     const { role } = await req.json();
 
     const user = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: { role },
     });
 
@@ -31,16 +29,14 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const currentUser = await requireAdmin();
+    const { id } = await params;
 
     // Don't allow deleting yourself
-    if (session.user.id === params.id) {
+    if (currentUser.id === id) {
       return NextResponse.json(
         { error: "Cannot delete your own account" },
         { status: 400 },
@@ -48,7 +44,7 @@ export async function DELETE(
     }
 
     await prisma.user.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ success: true });

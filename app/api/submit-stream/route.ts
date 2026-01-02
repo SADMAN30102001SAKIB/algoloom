@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { after } from "next/server";
+import { requireAuth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 import {
   submitBatchToJudge0,
   getBatchResults,
   SubmissionData,
 } from "@/lib/judge0";
 import { Language } from "@prisma/client";
+import { updateUserLeaderboard } from "@/lib/leaderboard";
+import { checkAndAwardAchievements } from "@/lib/achievements";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +27,8 @@ async function processSubmissionAsync(
   code: string,
   languageId: number,
   userId: string,
+  submissionCreatedAt: Date,
+  isAdmin: boolean,
   timeLimit?: number,
   memoryLimit?: number,
 ) {
@@ -62,12 +67,6 @@ async function processSubmissionAsync(
     }
 
     // Check if problem is published (admins can submit to unpublished problems)
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { role: true },
-    });
-    const isAdmin = user?.role === "ADMIN";
-
     if (!problem.publishedAt && !isAdmin) {
       // Problem is not published and user is not admin - reject submission
       await prisma.$transaction(async tx => {
@@ -409,8 +408,23 @@ async function processSubmissionAsync(
     // Handle XP and problem stats if accepted - use transaction to prevent race conditions
     if (verdict === "ACCEPTED") {
       const difficultyXP = { EASY: 10, MEDIUM: 20, HARD: 30 };
-      const xpEarned =
+      let xpEarned =
         difficultyXP[problem.difficulty as keyof typeof difficultyXP] || 10;
+
+      // Check if this is today's daily challenge for bonus XP
+      let dailyChallengeBonus = 0;
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+
+      const dailyChallenge = await prisma.dailyChallenge.findUnique({
+        where: { date: today },
+        select: { problemId: true, xpBonus: true },
+      });
+
+      if (dailyChallenge && dailyChallenge.problemId === problemId) {
+        dailyChallengeBonus = dailyChallenge.xpBonus;
+        xpEarned += dailyChallengeBonus;
+      }
 
       // Use transaction with Serializable isolation to prevent XP double-award race condition
       await prisma.$transaction(
@@ -434,13 +448,13 @@ async function processSubmissionAsync(
               attempts: 1,
               solved: true,
               status: "SOLVED",
-              solvedAt: new Date(),
+              solvedAt: submissionCreatedAt, // Use submission's createdAt for accuracy
             },
             update: {
               attempts: { increment: 1 },
               solved: true,
               status: "SOLVED",
-              solvedAt: existingStat?.solvedAt ?? new Date(), // Set only if not already set
+              solvedAt: existingStat?.solvedAt ?? submissionCreatedAt, // Set only if not already set
             },
           });
 
@@ -464,6 +478,11 @@ async function processSubmissionAsync(
                   level: newLevel,
                 },
               });
+
+              // Update leaderboard (async, don't await to avoid blocking submission)
+              updateUserLeaderboard(userId, newXP).catch(error =>
+                console.error("Leaderboard update failed:", error),
+              );
             }
           }
         },
@@ -471,6 +490,20 @@ async function processSubmissionAsync(
           isolationLevel: "Serializable", // Prevent XP double-award from concurrent submissions
         },
       );
+
+      // Check and award achievements (async, don't await)
+      // Get attempt count for first_attempt achievement
+      const attemptCount = await prisma.problemStat.findUnique({
+        where: { userId_problemId: { userId, problemId } },
+        select: { attempts: true },
+      });
+
+      checkAndAwardAchievements({
+        userId,
+        problemId,
+        submissionTime: submissionCreatedAt,
+        isFirstAttempt: attemptCount?.attempts === 1,
+      }).catch(error => console.error("Achievement check failed:", error));
     } else {
       // Failed submission - update stats and problem stat
       // Use transaction to ensure atomicity
@@ -515,19 +548,10 @@ async function processSubmissionAsync(
 }
 
 export async function POST(request: NextRequest) {
-  const session = await auth();
-
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const user = await requireAuth();
 
   // Check if user's email is verified
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-    select: { emailVerified: true },
-  });
-
-  if (!user?.emailVerified) {
+  if (!user.emailVerified) {
     return NextResponse.json(
       {
         error: "Please verify your email before submitting solutions",
@@ -617,14 +641,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email! },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
     // Check premium access
     if (problem.isPremium && !user.isPro) {
       return NextResponse.json(
@@ -673,38 +689,40 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Start background processing (don't await - fire and forget)
-    // Wrap in try-catch to ensure submission gets updated even if it crashes immediately
-    processSubmissionAsync(
-      submission.id,
-      problem.id,
-      code,
-      languageId,
-      user.id,
-      timeLimit,
-      memoryLimit,
-    ).catch(async error => {
-      console.error("Fatal error in background processing:", error);
-      // Ensure submission is marked as failed (this is a backup catch)
-      // The main catch in processSubmissionAsync should handle everything including totalSubmissions
-      // Don't increment totalSubmissions here to avoid double-counting
-      try {
-        await prisma.submission.update({
-          where: { id: submission.id },
-          data: {
-            verdict: "REJECTED",
-            runtime: 0,
-            memory: 0,
-            testCasesPassed: 0,
-          },
-        });
-      } catch (updateError) {
-        console.error(
-          "Failed to update submission after fatal error:",
-          updateError,
-        );
-      }
-    });
+    // Start background processing using after() to ensure it completes on Vercel
+    // after() tells Vercel to keep the function alive until the promise resolves
+    after(
+      processSubmissionAsync(
+        submission.id,
+        problem.id,
+        code,
+        languageId,
+        user.id,
+        submission.createdAt,
+        user.role === "ADMIN",
+        timeLimit,
+        memoryLimit,
+      ).catch(async error => {
+        console.error("Fatal error in background processing:", error);
+        // Ensure submission is marked as failed (this is a backup catch)
+        try {
+          await prisma.submission.update({
+            where: { id: submission.id },
+            data: {
+              verdict: "REJECTED",
+              runtime: 0,
+              memory: 0,
+              testCasesPassed: 0,
+            },
+          });
+        } catch (updateError) {
+          console.error(
+            "Failed to update submission after fatal error:",
+            updateError,
+          );
+        }
+      }),
+    );
 
     // Return immediately with submission ID
     return NextResponse.json({

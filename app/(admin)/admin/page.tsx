@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 
 export default async function AdminDashboard({
   searchParams,
 }: {
-  searchParams: { page?: string };
+  searchParams: Promise<{ page?: string }>;
 }) {
+  const { page: pageParam } = await searchParams;
+
   // Get stats
   const [problemCount, userCount, submissionCount, totalTestCases] =
     await Promise.all([
@@ -16,7 +18,7 @@ export default async function AdminDashboard({
     ]);
 
   // Pagination for recent submissions
-  const page = parseInt(searchParams.page || "1");
+  const page = parseInt(pageParam || "1");
   const submissionsPerPage = 5;
   const skip = (page - 1) * submissionsPerPage;
 

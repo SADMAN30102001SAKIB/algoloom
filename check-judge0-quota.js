@@ -1,4 +1,5 @@
 // Check Judge0 RapidAPI quota
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 require("dotenv").config();
 
 const JUDGE0_API_KEY = process.env.JUDGE0_API_KEY;

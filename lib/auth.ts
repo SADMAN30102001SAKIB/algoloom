@@ -5,6 +5,9 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
+// Force Node.js runtime (bcryptjs requires Node.js APIs)
+export const runtime = "nodejs";
+
 export const authConfig: NextAuthConfig = {
   providers: [
     GoogleProvider({
@@ -51,6 +54,7 @@ export const authConfig: NextAuthConfig = {
           image: user.image,
           role: user.role,
           emailVerified: user.emailVerified,
+          isPro: user.isPro,
         };
       },
     }),
@@ -143,6 +147,7 @@ export const authConfig: NextAuthConfig = {
           token.role = dbUser.role;
           token.username = dbUser.username;
           token.emailVerified = dbUser.emailVerified;
+          token.isPro = dbUser.isPro;
         }
       }
       // Refresh token data from database on update trigger (e.g., after email verification)
@@ -155,6 +160,7 @@ export const authConfig: NextAuthConfig = {
           token.role = dbUser.role;
           token.username = dbUser.username;
           token.emailVerified = dbUser.emailVerified;
+          token.isPro = dbUser.isPro;
         }
       }
       // For credentials provider, user data comes from authorize()
@@ -163,6 +169,7 @@ export const authConfig: NextAuthConfig = {
         token.role = user.role;
         token.username = user.username;
         token.emailVerified = user.emailVerified;
+        token.isPro = user.isPro;
       }
       return token;
     },
@@ -172,6 +179,7 @@ export const authConfig: NextAuthConfig = {
         session.user.role = token.role;
         session.user.username = token.username;
         session.user.emailVerified = token.emailVerified ?? null;
+        session.user.isPro = token.isPro ?? false;
       }
       return session;
     },
@@ -190,3 +198,35 @@ export const authConfig: NextAuthConfig = {
 };
 
 export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);
+
+// Helper function to get current authenticated user from database
+export async function getCurrentUser() {
+  const session = await auth();
+  if (!session?.user?.email) {
+    return null;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+  });
+
+  return user;
+}
+
+// Helper function to require authentication (throws if not authenticated)
+export async function requireAuth() {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+  return user;
+}
+
+// Helper function to require admin role
+export async function requireAdmin() {
+  const user = await requireAuth();
+  if (user.role !== "ADMIN") {
+    throw new Error("Forbidden: Admin access required");
+  }
+  return user;
+}
