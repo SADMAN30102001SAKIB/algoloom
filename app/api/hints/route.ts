@@ -115,6 +115,36 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Mark hintsUsed in ProblemStat (if not already solved)
+    const existingStat = await prisma.problemStat.findUnique({
+      where: {
+        uniqueUserProblem: {
+          userId: user.id,
+          problemId: problem.id,
+        },
+      },
+    });
+
+    if (!existingStat || existingStat.status !== "SOLVED") {
+      await prisma.problemStat.upsert({
+        where: {
+          uniqueUserProblem: {
+            userId: user.id,
+            problemId: problem.id,
+          },
+        },
+        update: {
+          hintsUsed: true,
+        },
+        create: {
+          userId: user.id,
+          problemId: problem.id,
+          status: "ATTEMPTED",
+          hintsUsed: true,
+        },
+      });
+    }
+
     // Deduct XP cost and recalculate level
     const xpCost = hintLevel * 5; // 5 XP per hint level
     const newXP = Math.max(0, user.xp - xpCost);
