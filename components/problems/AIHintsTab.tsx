@@ -247,6 +247,17 @@ export function AIHintsTab({
       <div className="grid grid-cols-3 gap-4">
         {[1, 2, 3].map(level => {
           const info = getHintLevelInfo(level);
+          const usedLevels = new Set(hintHistory.map(h => h.hintLevel));
+          const isUsed = usedLevels.has(level);
+          const isPreviousUsed = level === 1 || usedLevels.has(level - 1);
+          const isLocked = !isPreviousUsed && !isUsed;
+
+          // Pro users can regenerate hints (not locked/disabled when used)
+          const isPro = session?.user?.isPro;
+          const isDisabled =
+            loading || (!isPro && isUsed) || (!isPro && isLocked);
+          const canRegenerate = isPro && isUsed;
+
           const colorClasses = {
             green:
               "bg-green-500/10 border-green-500/30 hover:bg-green-500/20 hover:border-green-500/50 text-green-400",
@@ -259,13 +270,30 @@ export function AIHintsTab({
             <button
               key={level}
               onClick={() => requestHint(level)}
-              disabled={loading}
+              disabled={isDisabled}
               className={`p-4 rounded-lg border-2 transition-all ${colorClasses} ${
-                loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
               }`}>
               <div className="text-center">
-                <div className="text-2xl font-bold mb-1">Level {level}</div>
-                <div className="text-sm opacity-90 mb-2">{info.label}</div>
+                <div className="text-2xl font-bold mb-1">
+                  {isUsed && !canRegenerate
+                    ? "✓"
+                    : isLocked && !isPro
+                      ? "🔒"
+                      : canRegenerate
+                        ? "🔄"
+                        : ""}{" "}
+                  Level {level}
+                </div>
+                <div className="text-sm opacity-90 mb-2">
+                  {canRegenerate
+                    ? "Regenerate"
+                    : isUsed
+                      ? "Used"
+                      : isLocked
+                        ? "Locked"
+                        : info.label}
+                </div>
                 <div className="text-xs opacity-75 flex items-center justify-center gap-1">
                   <span>💰</span>
                   <span>{info.xp} XP</span>

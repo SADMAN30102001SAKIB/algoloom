@@ -38,12 +38,48 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Problem not found" }, { status: 404 });
     }
 
-    // Get user's Pro status
+    // Get user's Pro status first (needed for hint limit checks)
     const fullUser = await prisma.user.findUnique({
       where: { id: user.id },
       select: { isPro: true, role: true },
     });
     const isPro = fullUser?.isPro || fullUser?.role === "ADMIN";
+
+    // Check existing hints for this problem
+    const existingHints = await prisma.hintLog.findMany({
+      where: {
+        userId: user.id,
+        problemId,
+      },
+      select: { hintLevel: true },
+      orderBy: { hintLevel: "asc" },
+    });
+
+    const usedLevels = new Set(existingHints.map(h => h.hintLevel));
+
+    // Pro users can regenerate hints (unlimited per problem)
+    // Free users: enforce 3 hints max (one per level), sequential progression
+    if (!isPro) {
+      // Check if this level was already used
+      if (usedLevels.has(hintLevel)) {
+        return NextResponse.json(
+          {
+            error: `You've already used a Level ${hintLevel} hint for this problem. Upgrade to Pro for unlimited hints!`,
+          },
+          { status: 400 },
+        );
+      }
+
+      // Enforce sequential progression: can't skip levels
+      if (hintLevel > 1 && !usedLevels.has(hintLevel - 1)) {
+        return NextResponse.json(
+          {
+            error: `You must use Level ${hintLevel - 1} hint first before requesting Level ${hintLevel}.`,
+          },
+          { status: 400 },
+        );
+      }
+    }
 
     // Check daily hint limit (5 hints per day for free users, unlimited for Pro)
     const today = new Date();

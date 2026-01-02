@@ -1,7 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+// Using gemini-2.0-flash for higher free tier limits (1500 RPD vs 20 RPD for gemini-3-flash-preview)
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 export interface HintRequest {
   problemTitle: string;
