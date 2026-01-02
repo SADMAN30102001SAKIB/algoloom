@@ -34,7 +34,7 @@ interface Subscription {
 }
 
 function BillingContent() {
-  const { status: authStatus } = useSession();
+  const { status: authStatus, update: updateSession } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -58,10 +58,12 @@ function BillingContent() {
   useEffect(() => {
     if (success) {
       toast.success("Subscription activated successfully!");
+      // Refresh session to update Pro status in JWT
+      updateSession();
       // Clear the query param
       router.replace("/settings/billing");
     }
-  }, [success, router]);
+  }, [success, router, updateSession]);
 
   const fetchSubscription = async () => {
     try {

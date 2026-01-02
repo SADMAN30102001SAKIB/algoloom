@@ -154,35 +154,10 @@ export const authConfig: NextAuthConfig = {
         session.user.role = token.role;
         session.user.username = token.username;
         session.user.emailVerified = token.emailVerified ?? null;
-
-        // Fetch fresh isPro and subscription data from database (Node.js runtime)
-        try {
-          const dbUser = await prisma.user.findUnique({
-            where: { id: token.id },
-            select: {
-              isPro: true,
-              role: true,
-              subscription: {
-                select: { plan: true, status: true },
-              },
-            },
-          });
-          if (dbUser) {
-            session.user.isPro = dbUser.role === "ADMIN" || dbUser.isPro;
-            session.user.subscriptionPlan =
-              dbUser.subscription?.status === "ACTIVE"
-                ? dbUser.subscription.plan
-                : null;
-          } else {
-            session.user.isPro =
-              token.role === "ADMIN" || (token.isPro ?? false);
-            session.user.subscriptionPlan = token.subscriptionPlan ?? null;
-          }
-        } catch {
-          // Fallback to token data if DB fetch fails
-          session.user.isPro = token.role === "ADMIN" || (token.isPro ?? false);
-          session.user.subscriptionPlan = token.subscriptionPlan ?? null;
-        }
+        // Use cached token data (Edge-compatible)
+        // Fresh data is fetched via API calls when needed
+        session.user.isPro = token.role === "ADMIN" || (token.isPro ?? false);
+        session.user.subscriptionPlan = token.subscriptionPlan ?? null;
       }
       return session;
     },

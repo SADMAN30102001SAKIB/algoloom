@@ -12,7 +12,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -35,6 +35,31 @@ export default function Navbar() {
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [proStatus, setProStatus] = useState<{
+    isPro: boolean;
+    plan: "MONTHLY" | "YEARLY" | null;
+  }>({ isPro: false, plan: null });
+
+  // Fetch fresh Pro status from API
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetch("/api/user/subscription")
+        .then(res => res.json())
+        .then(data => {
+          setProStatus({
+            isPro: data.isPro || false,
+            plan: data.subscription?.plan || null,
+          });
+        })
+        .catch(() => {
+          // Fallback to session data
+          setProStatus({
+            isPro: session?.user?.isPro || false,
+            plan: session?.user?.subscriptionPlan || null,
+          });
+        });
+    }
+  }, [status, session]);
 
   const isActive = (href: string) => pathname === href;
 
@@ -82,12 +107,9 @@ export default function Navbar() {
             <div className="w-8 h-8 rounded-full bg-slate-700 animate-pulse" />
           ) : session?.user ? (
             <>
-              {/* Premium Badge */}
-              {session.user.isPro && (
-                <PremiumBadge
-                  size="md"
-                  plan={session.user.subscriptionPlan || undefined}
-                />
+              {/* Premium Badge - uses fresh API data */}
+              {proStatus.isPro && (
+                <PremiumBadge size="md" plan={proStatus.plan || undefined} />
               )}
 
               {/* User Menu */}
