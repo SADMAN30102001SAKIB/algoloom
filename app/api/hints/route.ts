@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
     // Mark hintsUsed in ProblemStat (if not already solved)
     const existingStat = await prisma.problemStat.findUnique({
       where: {
-        uniqueUserProblem: {
+        userId_problemId: {
           userId: user.id,
           problemId: problem.id,
         },
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
     if (!existingStat || existingStat.status !== "SOLVED") {
       await prisma.problemStat.upsert({
         where: {
-          uniqueUserProblem: {
+          userId_problemId: {
             userId: user.id,
             problemId: problem.id,
           },

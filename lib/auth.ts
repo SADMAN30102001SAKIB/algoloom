@@ -136,7 +136,7 @@ export const authConfig: NextAuthConfig = {
       }
       return true;
     },
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user }) {
       // Always fetch fresh isPro and subscription data from database
       if (token.email) {
         const dbUser = await prisma.user.findUnique({
