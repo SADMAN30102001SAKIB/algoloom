@@ -437,8 +437,8 @@ export default function ProfilePage() {
             <div className="flex-1">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 <div>
-                  <div className="flex items-center gap-3 mb-1">
-                    <h1 className="text-2xl font-bold text-white">
+                  <div className="flex items-center gap-3 mb-1 flex-wrap">
+                    <h1 className="text-2xl font-bold text-white max-w-[200px] md:max-w-[300px] truncate">
                       {profile.name || profile.username}
                     </h1>
                     {profile.emailVerified && (
@@ -462,7 +462,9 @@ export default function ProfilePage() {
                       targetUsername={profile.username}
                     />
                   </div>
-                  <p className="text-zinc-400">@{profile.username}</p>
+                  <p className="text-zinc-400 truncate max-w-[250px] md:max-w-[350px]">
+                    @{profile.username}
+                  </p>
                   {profile.bio && (
                     <p className="text-zinc-300 mt-2 max-w-lg">{profile.bio}</p>
                   )}
