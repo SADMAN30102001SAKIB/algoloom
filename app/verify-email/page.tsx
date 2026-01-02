@@ -15,8 +15,12 @@ function VerifyEmailContent() {
     "loading",
   );
   const [message, setMessage] = useState("");
+  const [hasVerified, setHasVerified] = useState(false);
 
   useEffect(() => {
+    // Prevent double verification
+    if (hasVerified) return;
+
     const token = searchParams.get("token");
     const email = searchParams.get("email");
 
@@ -25,6 +29,8 @@ function VerifyEmailContent() {
       setMessage("Invalid verification link");
       return;
     }
+
+    setHasVerified(true);
 
     // Verify the token
     fetch("/api/auth/verify-email", {
@@ -49,7 +55,7 @@ function VerifyEmailContent() {
         setStatus("error");
         setMessage("An error occurred during verification");
       });
-  }, [searchParams, update]);
+  }, [searchParams, update, hasVerified]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
