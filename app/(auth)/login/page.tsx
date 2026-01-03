@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Eye, EyeOff, Code2, Loader2 } from "lucide-react";
+import { GoogleOneTap } from "@/components/auth/GoogleOneTap";
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -23,13 +24,19 @@ function LoginForm() {
   // Redirect if already logged in
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
-      if (session.user.role === "ADMIN") {
-        router.replace("/admin");
+      // For admin callbackUrl, respect it; otherwise use role-based redirect
+      const isAdminCallback = callbackUrl === "/admin";
+      const isAdmin = session.user.role === "ADMIN";
+
+      // If trying to access admin but not admin, go to problems
+      if (isAdminCallback && !isAdmin) {
+        window.location.href = "/problems";
       } else {
-        router.replace(callbackUrl);
+        // Either admin going to admin, or regular user going to their callbackUrl
+        window.location.href = callbackUrl;
       }
     }
-  }, [status, session, callbackUrl, router]);
+  }, [status, session, callbackUrl]);
 
   // Show loading while checking authentication
   if (status === "loading") {
@@ -88,6 +95,7 @@ function LoginForm() {
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+      <GoogleOneTap callbackUrl={callbackUrl} />
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">

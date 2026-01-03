@@ -142,7 +142,8 @@ function ProblemsPageContent() {
     if (status === "ATTEMPTED") {
       return <span className="text-yellow-400">○</span>;
     }
-    return null;
+    // Todo/untouched - subtle empty circle
+    return <span className="text-slate-600">○</span>;
   };
 
   if (status === "loading") {
@@ -196,20 +197,33 @@ function ProblemsPageContent() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Status
-              </label>
-              <select
-                value={filter.status}
-                onChange={e => setFilter({ ...filter, status: e.target.value })}
-                className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
-                <option value="">All Status</option>
-                <option value="SOLVED">Solved</option>
-                <option value="ATTEMPTED">Attempted</option>
-                <option value="TODO">Todo</option>
-              </select>
-            </div>
+            {status === "authenticated" ? (
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Status
+                </label>
+                <select
+                  value={filter.status}
+                  onChange={e =>
+                    setFilter({ ...filter, status: e.target.value })
+                  }
+                  className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition">
+                  <option value="">All Status</option>
+                  <option value="SOLVED">Solved</option>
+                  <option value="ATTEMPTED">Attempted</option>
+                  <option value="TODO">Todo</option>
+                </select>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Status
+                </label>
+                <div className="w-full px-4 py-2.5 bg-slate-800/30 border border-slate-700/50 rounded-lg text-slate-500 text-sm">
+                  Sign in to track progress
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">

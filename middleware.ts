@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { authEdge } from "@/lib/auth.edge";
 import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+import { Redis } from "@upstash/redis/cloudflare";
 
 // Initialize Upstash Redis for distributed rate limiting
 const redis = new Redis({
@@ -109,7 +109,16 @@ export async function middleware(request: NextRequest) {
   const isAdminPath = adminPaths.some(path => pathname.startsWith(path));
 
   if (isAdminPath) {
-    const session = await auth();
+    const session = await authEdge();
+
+    // Debug: log session info
+    console.log("[Middleware] Admin route check:", {
+      pathname,
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      userRole: session?.user?.role,
+      userEmail: session?.user?.email,
+    });
 
     if (!session?.user) {
       const signInUrl = new URL("/login", request.url);
@@ -118,7 +127,8 @@ export async function middleware(request: NextRequest) {
     }
 
     if (session.user.role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/", request.url));
+      // Non-admin trying to access admin page - redirect to problems, not login
+      return NextResponse.redirect(new URL("/problems", request.url));
     }
   }
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { generateHint } from "@/lib/gemini";
+import { updateUserLeaderboard } from "@/lib/leaderboard";
 
 export async function POST(req: NextRequest) {
   try {
@@ -193,6 +194,11 @@ export async function POST(req: NextRequest) {
         level: newLevel,
       },
     });
+
+    // Update leaderboard with new XP
+    await updateUserLeaderboard(user.id, newXP).catch(err =>
+      console.error("Leaderboard update failed after hint XP deduction:", err),
+    );
 
     return NextResponse.json({
       success: true,

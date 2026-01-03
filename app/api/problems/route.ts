@@ -169,7 +169,7 @@ export async function GET(req: NextRequest) {
           isPremium: problem.isPremium,
           acceptanceRate,
           totalSubmissions,
-          status: problem.problemStats?.[0]?.status || "UNTOUCHED",
+          userStatus: problem.problemStats?.[0]?.status || null,
           attempts: problem.problemStats?.[0]?.attempts || 0,
           hintsUsed: problem.problemStats?.[0]?.hintsUsed || false,
         };

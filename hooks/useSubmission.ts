@@ -91,7 +91,15 @@ export function useSubmission(problemSlug: string) {
         }),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        // Empty response or invalid JSON
+        data = {
+          error: "Server returned an invalid response. Please try again.",
+        };
+      }
 
       if (!response.ok || !data.submissionId) {
         // Handle validation errors as rejections, not runtime errors

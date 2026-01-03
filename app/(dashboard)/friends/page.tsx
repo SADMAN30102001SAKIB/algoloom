@@ -76,12 +76,17 @@ export default function FriendsPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
+    if (status === "loading") return; // Wait for session to load
+
     if (session?.user) {
       fetchFriends();
       fetchActivity();
+    } else {
+      // Not logged in - stop loading
+      setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user]);
+  }, [session?.user, status]);
 
   async function fetchFriends() {
     try {

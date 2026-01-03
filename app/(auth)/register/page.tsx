@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Eye, EyeOff, Code2, Loader2 } from "lucide-react";
+import { GoogleOneTap } from "@/components/auth/GoogleOneTap";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -119,6 +120,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+      <GoogleOneTap callbackUrl="/problems" />
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">

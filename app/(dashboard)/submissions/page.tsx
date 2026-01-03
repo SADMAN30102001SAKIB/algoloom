@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -16,6 +16,7 @@ import {
   Cpu,
   HardDrive,
   ExternalLink,
+  FileText,
 } from "lucide-react";
 
 interface Submission {
@@ -119,7 +120,7 @@ function VerdictBadge({ verdict }: { verdict: string }) {
 }
 
 export default function SubmissionsPage() {
-  const router = useRouter();
+  const { data: session, status } = useSession();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
@@ -131,6 +132,13 @@ export default function SubmissionsPage() {
   const [page, setPage] = useState(1);
 
   useEffect(() => {
+    if (status === "loading") return;
+
+    if (!session?.user) {
+      setLoading(false);
+      return;
+    }
+
     async function fetchSubmissions() {
       setLoading(true);
       try {
@@ -144,10 +152,6 @@ export default function SubmissionsPage() {
         const data = await res.json();
 
         if (!res.ok) {
-          if (res.status === 401) {
-            router.push("/login");
-            return;
-          }
           throw new Error(data.error || "Failed to fetch");
         }
 
@@ -161,11 +165,38 @@ export default function SubmissionsPage() {
     }
 
     fetchSubmissions();
-  }, [page, verdictFilter, languageFilter, router]);
+  }, [page, verdictFilter, languageFilter, session?.user, status]);
 
   const handleFilterChange = () => {
     setPage(1); // Reset to first page on filter change
   };
+
+  if (status === "loading" || loading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500" />
+      </div>
+    );
+  }
+
+  if (!session?.user) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="text-center">
+          <FileText className="w-16 h-16 text-zinc-700 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-white mb-2">
+            Sign in to view submissions
+          </h1>
+          <p className="text-zinc-400 mb-4">Track your coding progress</p>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+            Sign In
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (

@@ -548,7 +548,15 @@ async function processSubmissionAsync(
 }
 
 export async function POST(request: NextRequest) {
-  const user = await requireAuth();
+  let user;
+  try {
+    user = await requireAuth();
+  } catch {
+    return NextResponse.json(
+      { error: "Please sign in to submit solutions" },
+      { status: 401 },
+    );
+  }
 
   // Check if user's email is verified
   if (!user.emailVerified) {

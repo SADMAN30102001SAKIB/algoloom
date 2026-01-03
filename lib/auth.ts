@@ -64,12 +64,12 @@ export const authConfig: NextAuthConfig = {
   },
   cookies: {
     sessionToken: {
-      name: `next-auth.session-token`,
+      name: "next-auth.session-token",
       options: {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: true,
+        secure: process.env.NODE_ENV === "production",
         domain:
           process.env.NODE_ENV === "production"
             ? "algoloom.sadman.me"
@@ -77,12 +77,12 @@ export const authConfig: NextAuthConfig = {
       },
     },
     callbackUrl: {
-      name: `next-auth.callback-url`,
+      name: "next-auth.callback-url",
       options: {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: true,
+        secure: process.env.NODE_ENV === "production",
         domain:
           process.env.NODE_ENV === "production"
             ? "algoloom.sadman.me"
@@ -90,12 +90,12 @@ export const authConfig: NextAuthConfig = {
       },
     },
     csrfToken: {
-      name: `next-auth.csrf-token`,
+      name: "next-auth.csrf-token",
       options: {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: true,
+        secure: process.env.NODE_ENV === "production",
         domain:
           process.env.NODE_ENV === "production"
             ? "algoloom.sadman.me"

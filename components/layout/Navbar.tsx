@@ -186,7 +186,11 @@ export default function Navbar() {
           ) : (
             <div className="flex items-center gap-2">
               <Link href="/login">
-                <Button variant="ghost">Sign In</Button>
+                <Button
+                  variant="ghost"
+                  className="text-slate-300 hover:text-white hover:bg-slate-800">
+                  Sign In
+                </Button>
               </Link>
               <Link href="/register">
                 <Button className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600">
