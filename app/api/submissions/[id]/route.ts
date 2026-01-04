@@ -130,6 +130,22 @@ export async function GET(
             difficultyXP[
               submission.problem.difficulty as keyof typeof difficultyXP
             ] || 10;
+
+          // Check if this was a daily challenge for bonus XP
+          const submissionDate = new Date(submission.createdAt);
+          submissionDate.setUTCHours(0, 0, 0, 0);
+
+          const dailyChallenge = await prisma.dailyChallenge.findUnique({
+            where: { date: submissionDate },
+            select: { problemId: true, xpBonus: true },
+          });
+
+          if (
+            dailyChallenge &&
+            dailyChallenge.problemId === submission.problemId
+          ) {
+            xpEarned += dailyChallenge.xpBonus;
+          }
         }
       }
     }

@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { updateUserLeaderboard } from "@/lib/leaderboard";
 
 interface AchievementContext {
   userId: string;
@@ -182,14 +183,33 @@ export async function checkAndAwardAchievements(
             },
           });
 
-          // Award XP bonus for the achievement
+          // Award XP bonus for the achievement and update level
           if (achievement.xpReward > 0) {
-            await prisma.user.update({
+            const currentUser = await prisma.user.findUnique({
               where: { id: userId },
-              data: {
-                xp: { increment: achievement.xpReward },
-              },
+              select: { xp: true },
             });
+
+            if (currentUser) {
+              const newXP = currentUser.xp + achievement.xpReward;
+              const newLevel = Math.floor(Math.sqrt(newXP / 5)) + 1;
+
+              await prisma.user.update({
+                where: { id: userId },
+                data: {
+                  xp: newXP,
+                  level: newLevel,
+                },
+              });
+
+              // Update leaderboard with new XP
+              updateUserLeaderboard(userId, newXP).catch(error =>
+                console.error(
+                  "Leaderboard update failed after achievement:",
+                  error,
+                ),
+              );
+            }
           }
 
           unlockedAchievements.push({

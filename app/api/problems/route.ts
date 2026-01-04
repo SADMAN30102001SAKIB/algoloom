@@ -90,7 +90,8 @@ export async function GET(req: NextRequest) {
             status: "ATTEMPTED",
           },
         };
-      } else if (status === "UNTOUCHED") {
+      } else if (status === "TODO" || status === "UNTOUCHED") {
+        // TODO = problems user hasn't touched at all (no problemStats entry)
         where.problemStats = {
           none: {
             userId,
