@@ -1,6 +1,6 @@
 import Link from "next/link";
 import prisma from "@/lib/prisma";
-import { Code2, FileCode, Users, Send, CheckCircle } from "lucide-react";
+import { FileCode, Users, Send, CheckCircle } from "lucide-react";
 
 export default async function AdminDashboard({
   searchParams,

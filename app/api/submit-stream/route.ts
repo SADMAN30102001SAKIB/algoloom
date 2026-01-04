@@ -490,7 +490,7 @@ async function processSubmissionAsync(
         select: { attempts: true },
       });
 
-      const unlockedAchievements = await checkAndAwardAchievements({
+      await checkAndAwardAchievements({
         userId,
         problemId,
         submissionTime: submissionCreatedAt,
