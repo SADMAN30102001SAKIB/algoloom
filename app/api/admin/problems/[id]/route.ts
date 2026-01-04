@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 interface TestCaseInput {
   input: string;
@@ -53,13 +54,14 @@ export async function PUT(
     return NextResponse.json(problem);
   } catch (error: unknown) {
     console.error("Error updating problem:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Failed to update problem",
-      },
-      { status: 500 },
-    );
+    // Handle Prisma unique constraint errors gracefully
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        return NextResponse.json({ error: "Slug or unique field already exists" }, { status: 409 });
+      }
+    }
+
+    return NextResponse.json({ error: "Failed to update problem" }, { status: 500 });
   }
 }
 
@@ -79,12 +81,6 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     console.error("Error deleting problem:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Failed to delete problem",
-      },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to delete problem" }, { status: 500 });
   }
 }
