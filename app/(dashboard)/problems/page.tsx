@@ -183,7 +183,7 @@ function ProblemsPageContent() {
   }) {
     return (
       <tr
-        className="transform-gpu will-change-transform hover:-translate-y-[1px] hover:bg-slate-800/20 transition-transform duration-150 cursor-pointer group"
+        className="hover:bg-slate-800/20 hover:shadow-sm transition-shadow duration-150 cursor-pointer group"
         onClick={onNavigate}>
         <td className="px-6 py-4 whitespace-nowrap text-2xl">
           {getStatusIcon(problem.userStatus)}
