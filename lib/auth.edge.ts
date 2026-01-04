@@ -34,14 +34,9 @@ export const authConfigEdge: NextAuthConfig = {
     },
   },
   callbacks: {
-    async jwt({ token, user }) {
-      if (user?.id) {
-        token.id = user.id;
-        token.role = user.role;
-        token.username = user.username;
-        token.emailVerified = user.emailVerified;
-        token.isPro = user.isPro;
-      }
+    // JWT callback: Edge only decodes tokens, main auth.ts handles encoding
+    // Token data (id, role, username, etc.) is already set by auth.ts
+    async jwt({ token }) {
       return token;
     },
     async session({ session, token }) {

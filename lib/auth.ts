@@ -136,9 +136,31 @@ export const authConfig: NextAuthConfig = {
       }
       return true;
     },
-    async jwt({ token, user }) {
-      // Only set token data on initial sign-in (no Prisma calls here - Edge compatible)
-      if (user?.id) {
+    async jwt({ token, user, account }) {
+      // For OAuth providers, fetch user data from database since NextAuth's user object
+      // only contains provider data (email, name, image), not our database fields
+      if (account && token.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: token.email },
+          select: {
+            id: true,
+            role: true,
+            username: true,
+            emailVerified: true,
+            isPro: true,
+            subscriptionPlan: true,
+          },
+        });
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.role = dbUser.role;
+          token.username = dbUser.username;
+          token.emailVerified = dbUser.emailVerified;
+          token.isPro = dbUser.isPro;
+          token.subscriptionPlan = dbUser.subscriptionPlan;
+        }
+      } else if (user?.id) {
+        // For credentials provider, user object already has database fields
         token.id = user.id;
         token.role = user.role;
         token.username = user.username;

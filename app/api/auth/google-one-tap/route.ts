@@ -6,9 +6,10 @@ import { encode } from "next-auth/jwt";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// Cookie name used by NextAuth
-const getCookieName = (isProduction: boolean) =>
-  isProduction ? "__Secure-next-auth.session-token" : "next-auth.session-token";
+// Cookie name must match what NextAuth expects
+// NextAuth uses "next-auth.session-token" as the base name
+// The salt for encoding must also match
+const COOKIE_NAME = "next-auth.session-token";
 
 export async function POST(request: NextRequest) {
   try {
@@ -63,9 +64,9 @@ export async function POST(request: NextRequest) {
     });
 
     const isProduction = process.env.NODE_ENV === "production";
-    const cookieName = getCookieName(isProduction);
 
     // Use NextAuth's encode function to create a properly formatted JWT
+    // Salt must match the cookie name NextAuth uses for decoding
     const token = await encode({
       token: {
         name: user.name,
@@ -79,19 +80,21 @@ export async function POST(request: NextRequest) {
         emailVerified: user.emailVerified,
       },
       secret: process.env.NEXTAUTH_SECRET!,
-      salt: cookieName, // Salt must match the cookie name NextAuth uses
+      salt: COOKIE_NAME,
       maxAge: 30 * 24 * 60 * 60, // 30 days
     });
 
     // Set the session cookie
     const cookieStore = await cookies();
+    const productionDomain = process.env.COOKIE_DOMAIN || "algoloom.sadman.me";
 
-    cookieStore.set(cookieName, token, {
+    cookieStore.set(COOKIE_NAME, token, {
       httpOnly: true,
       secure: isProduction,
       sameSite: "lax",
       path: "/",
       maxAge: 30 * 24 * 60 * 60,
+      domain: isProduction ? productionDomain : undefined,
     });
 
     return NextResponse.json({
