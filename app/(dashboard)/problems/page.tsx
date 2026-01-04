@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef, Suspense } from "react";
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  Suspense,
+  memo,
+} from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
@@ -166,6 +173,71 @@ function ProblemsPageContent() {
     return <span className="text-slate-600">○</span>;
   };
 
+  // Memoized ProblemRow to avoid unnecessary re-renders
+  const ProblemRow = memo(function ProblemRow({
+    problem,
+    onNavigate,
+  }: {
+    problem: Problem;
+    onNavigate: () => void;
+  }) {
+    return (
+      <tr
+        className="transform-gpu will-change-transform hover:-translate-y-[1px] hover:bg-slate-800/20 transition-transform duration-150 cursor-pointer group"
+        onClick={onNavigate}>
+        <td className="px-6 py-4 whitespace-nowrap text-2xl">
+          {getStatusIcon(problem.userStatus)}
+        </td>
+        <td className="px-6 py-4">
+          <div className="flex items-center gap-2">
+            <span className="text-white font-medium group-hover:text-cyan-400 transition">
+              {problem.title}
+            </span>
+            {problem.isPremium && (
+              <span className="text-xs bg-yellow-500/10 text-yellow-400 px-2 py-1 rounded border border-yellow-500/20 font-medium">
+                Premium
+              </span>
+            )}
+            {problem.hintsUsed && (
+              <span
+                className="text-xs bg-blue-500/10 text-blue-400 px-2 py-1 rounded border border-blue-500/20 font-medium"
+                title="You used hints on this problem">
+                💡 Hint
+              </span>
+            )}
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <span
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${getDifficultyColor(
+              problem.difficulty,
+            )}`}>
+            {problem.difficulty}
+          </span>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-slate-300 font-medium">
+          {problem.acceptanceRate.toFixed(1)}%
+        </td>
+        <td className="px-6 py-4">
+          <div className="flex flex-wrap gap-1.5">
+            {problem.tags.slice(0, 3).map((tag, idx) => (
+              <span
+                key={idx}
+                className="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700 font-medium">
+                {tag}
+              </span>
+            ))}
+            {problem.tags.length > 3 && (
+              <span className="text-xs text-slate-500 font-medium">
+                +{problem.tags.length - 3}
+              </span>
+            )}
+          </div>
+        </td>
+      </tr>
+    );
+  });
+
   if (status === "loading") {
     return (
       <PageLoader
@@ -196,7 +268,7 @@ function ProblemsPageContent() {
         </div>
 
         {/* Filters */}
-        <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-xl p-6 mb-8 shadow-xl">
+        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
@@ -259,7 +331,7 @@ function ProblemsPageContent() {
         </div>
 
         {/* Problems Table */}
-        <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+        <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
           {loading ? (
             <div className="p-16 text-center text-slate-400">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
@@ -273,7 +345,9 @@ function ProblemsPageContent() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div
+              className="overflow-x-auto"
+              style={{ scrollbarGutter: "stable" }}>
               <table className="w-full">
                 <thead className="bg-slate-800/80 border-b border-slate-700">
                   <tr>
@@ -296,60 +370,13 @@ function ProblemsPageContent() {
                 </thead>
                 <tbody className="divide-y divide-slate-800">
                   {problems.map(problem => (
-                    <tr
+                    <ProblemRow
                       key={problem.id}
-                      className="hover:bg-slate-800/40 transition cursor-pointer group"
-                      onClick={() => router.push(`/problems/${problem.slug}`)}>
-                      <td className="px-6 py-4 whitespace-nowrap text-2xl">
-                        {getStatusIcon(problem.userStatus)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="text-white font-medium group-hover:text-cyan-400 transition">
-                            {problem.title}
-                          </span>
-                          {problem.isPremium && (
-                            <span className="text-xs bg-yellow-500/10 text-yellow-400 px-2 py-1 rounded border border-yellow-500/20 font-medium">
-                              Premium
-                            </span>
-                          )}
-                          {problem.hintsUsed && (
-                            <span
-                              className="text-xs bg-blue-500/10 text-blue-400 px-2 py-1 rounded border border-blue-500/20 font-medium"
-                              title="You used hints on this problem">
-                              💡 Hint
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${getDifficultyColor(
-                            problem.difficulty,
-                          )}`}>
-                          {problem.difficulty}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-slate-300 font-medium">
-                        {problem.acceptanceRate.toFixed(1)}%
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-wrap gap-1.5">
-                          {problem.tags.slice(0, 3).map((tag, idx) => (
-                            <span
-                              key={idx}
-                              className="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700 font-medium">
-                              {tag}
-                            </span>
-                          ))}
-                          {problem.tags.length > 3 && (
-                            <span className="text-xs text-slate-500 font-medium">
-                              +{problem.tags.length - 3}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
+                      problem={problem}
+                      onNavigate={() =>
+                        router.push(`/problems/${problem.slug}`)
+                      }
+                    />
                   ))}
                 </tbody>
               </table>

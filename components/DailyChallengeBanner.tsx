@@ -106,9 +106,9 @@ export default function DailyChallengeBanner() {
             : "bg-slate-900/50 border-slate-700"
         }`}>
         {/* Background decoration */}
-        <div className="absolute inset-0 opacity-40">
-          <div className="absolute -right-20 -top-20 w-64 h-64 bg-gradient-to-br from-purple-500/20 via-cyan-500/10 to-transparent rounded-full blur-3xl" />
-          <div className="absolute -left-10 -bottom-10 w-48 h-48 bg-gradient-to-tr from-cyan-500/15 to-transparent rounded-full blur-2xl" />
+        <div className="absolute inset-0 opacity-28">
+          <div className="absolute -right-16 -top-16 w-56 h-56 bg-gradient-to-br from-purple-500/12 via-cyan-500/8 to-transparent rounded-full blur-xl" />
+          <div className="absolute -left-8 -bottom-8 w-40 h-40 bg-gradient-to-tr from-cyan-500/10 to-transparent rounded-full blur-lg" />
         </div>
 
         <div className="relative p-4 sm:p-6">
