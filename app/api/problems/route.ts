@@ -45,10 +45,10 @@ export async function GET(req: NextRequest) {
       where.difficulty = difficulty as "EASY" | "MEDIUM" | "HARD";
     }
 
-    // Store tags for post-filtering (case-insensitive substring match)
+    // Tag filters (exact match) - prefer DB filtering for performance
     let tagFilters: string[] | null = null;
     if (tags) {
-      tagFilters = tags.split(",").map(t => t.trim().toLowerCase());
+      tagFilters = tags.split(",").map(t => t.trim());
     }
 
     if (company) {
@@ -100,9 +100,15 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Fetch problems (we'll filter tags in memory)
-    let allProblems = await prisma.problem.findMany({
-      where,
+    // Apply tag filters to the where clause only if present to keep typing strict
+    const whereClause = tagFilters && tagFilters.length > 0 ? { ...where, tags: { hasEvery: tagFilters } } : where;
+
+    // Fetch total count efficiently
+    const totalCount = await prisma.problem.count({ where: whereClause });
+
+    // Fetch just the page of problems we need
+    const problemsRaw = await prisma.problem.findMany({
+      where: whereClause,
       include: {
         _count: {
           select: {
@@ -125,57 +131,50 @@ export async function GET(req: NextRequest) {
       orderBy: {
         [sortBy]: order as "asc" | "desc",
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
-    // Apply tag filtering (case-insensitive substring match)
-    if (tagFilters && tagFilters.length > 0) {
-      allProblems = allProblems.filter(problem => {
-        return tagFilters.every(filterTag =>
-          problem.tags.some(problemTag =>
-            problemTag.toLowerCase().includes(filterTag),
-          ),
-        );
-      });
-    }
+    // For acceptance counts, run a single aggregate query for all problems on the page
+    const problemIds = problemsRaw.map(p => p.id);
 
-    // Get total count after tag filtering
-    const totalCount = allProblems.length;
+    const acceptedGroups = await prisma.submission.groupBy({
+      by: ["problemId"],
+      where: {
+        problemId: { in: problemIds },
+        verdict: "ACCEPTED",
+      },
+      _count: {
+        _all: true,
+      },
+    });
 
-    // Apply pagination
-    const problems = allProblems.slice((page - 1) * limit, page * limit);
+    const acceptedMap: Record<string, number> = {};
+    acceptedGroups.forEach(g => {
+      acceptedMap[g.problemId] = g._count._all;
+    });
 
-    // Calculate acceptance rate for each problem
-    const problemsWithStats = await Promise.all(
-      problems.map(async problem => {
-        const acceptedCount = await prisma.submission.count({
-          where: {
-            problemId: problem.id,
-            verdict: "ACCEPTED",
-          },
-        });
+    const problemsWithStats = problemsRaw.map(problem => {
+      const acceptedCount = acceptedMap[problem.id] || 0;
+      const totalSubmissions = problem._count.submissions;
+      const acceptanceRate =
+        totalSubmissions > 0 ? Math.round((acceptedCount / totalSubmissions) * 100) : 0;
 
-        const totalSubmissions = problem._count.submissions;
-        const acceptanceRate =
-          totalSubmissions > 0
-            ? Math.round((acceptedCount / totalSubmissions) * 100)
-            : 0;
-
-        return {
-          id: problem.id,
-          title: problem.title,
-          slug: problem.slug,
-          difficulty: problem.difficulty,
-          tags: problem.tags,
-          companies: problem.companies,
-          isPremium: problem.isPremium,
-          acceptanceRate,
-          totalSubmissions,
-          userStatus: problem.problemStats?.[0]?.status || null,
-          attempts: problem.problemStats?.[0]?.attempts || 0,
-          hintsUsed: problem.problemStats?.[0]?.hintsUsed || false,
-        };
-      }),
-    );
+      return {
+        id: problem.id,
+        title: problem.title,
+        slug: problem.slug,
+        difficulty: problem.difficulty,
+        tags: problem.tags,
+        companies: problem.companies,
+        isPremium: problem.isPremium,
+        acceptanceRate,
+        totalSubmissions,
+        userStatus: problem.problemStats?.[0]?.status || null,
+        attempts: problem.problemStats?.[0]?.attempts || 0,
+        hintsUsed: problem.problemStats?.[0]?.hintsUsed || false,
+      };
+    });
 
     return NextResponse.json({
       success: true,

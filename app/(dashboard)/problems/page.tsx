@@ -43,6 +43,14 @@ function ProblemsPageContent() {
     status: searchParams.get("status") || "",
   }));
 
+  // Local debounced input for tags to avoid triggering fetch on every keystroke
+  const [tagsInput, setTagsInput] = useState(filter.tags);
+
+  useEffect(() => {
+    setTagsInput(filter.tags);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Track previous filter values to detect actual changes
   const prevFilterRef = useRef(filter);
 
@@ -122,6 +130,17 @@ function ProblemsPageContent() {
     router.push(`/problems?${params.toString()}`, { scroll: false });
     setCurrentPage(1);
   }, [filter, router]);
+
+  // Debounce tags input and update filter after user stops typing
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (tagsInput !== filter.tags) {
+        setFilter(prev => ({ ...prev, tags: tagsInput }));
+      }
+    }, 450);
+
+    return () => clearTimeout(t);
+  }, [tagsInput, filter.tags]);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -231,8 +250,8 @@ function ProblemsPageContent() {
               <input
                 type="text"
                 placeholder="e.g., array, string"
-                value={filter.tags}
-                onChange={e => setFilter({ ...filter, tags: e.target.value })}
+                value={tagsInput}
+                onChange={e => setTagsInput(e.target.value)}
                 className="w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
               />
             </div>
@@ -370,18 +389,13 @@ function ProblemsPageContent() {
                   </>
                 )}
 
-                {/* Page numbers */}
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter(page => {
-                    return (
-                      page === currentPage ||
-                      page === currentPage - 1 ||
-                      page === currentPage + 1 ||
-                      page === currentPage - 2 ||
-                      page === currentPage + 2
-                    );
-                  })
-                  .map(page => (
+                {/* Page numbers (efficient range around current page) */}
+                {(() => {
+                  const pages: number[] = [];
+                  const start = Math.max(1, currentPage - 2);
+                  const end = Math.min(totalPages, currentPage + 2);
+                  for (let p = start; p <= end; p++) pages.push(p);
+                  return pages.map(page => (
                     <button
                       key={page}
                       onClick={() => goToPage(page)}
@@ -392,7 +406,8 @@ function ProblemsPageContent() {
                       }`}>
                       {page}
                     </button>
-                  ))}
+                  ));
+                })()}
 
                 {/* Last page */}
                 {currentPage < totalPages - 2 && (
