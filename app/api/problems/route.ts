@@ -101,7 +101,10 @@ export async function GET(req: NextRequest) {
     }
 
     // Apply tag filters to the where clause only if present to keep typing strict
-    const whereClause = tagFilters && tagFilters.length > 0 ? { ...where, tags: { hasEvery: tagFilters } } : where;
+    const whereClause =
+      tagFilters && tagFilters.length > 0
+        ? { ...where, tags: { hasEvery: tagFilters } }
+        : where;
 
     // Fetch total count efficiently
     const totalCount = await prisma.problem.count({ where: whereClause });
@@ -158,7 +161,9 @@ export async function GET(req: NextRequest) {
       const acceptedCount = acceptedMap[problem.id] || 0;
       const totalSubmissions = problem._count.submissions;
       const acceptanceRate =
-        totalSubmissions > 0 ? Math.round((acceptedCount / totalSubmissions) * 100) : 0;
+        totalSubmissions > 0
+          ? Math.round((acceptedCount / totalSubmissions) * 100)
+          : 0;
 
       return {
         id: problem.id,
