@@ -290,7 +290,7 @@ export function AIHintsTab({
                     ? "Regenerate"
                     : isUsed
                       ? "Used"
-                      : isLocked
+                      : isLocked && !isPro
                         ? "Locked"
                         : info.label}
                 </div>
@@ -384,9 +384,8 @@ export function AIHintsTab({
             <ReactMarkdown
               remarkPlugins={[remarkMath]}
               rehypePlugins={[rehypeKatex]}>
-              {isTyping ? typingText : currentHint.hintText}
+              {isTyping ? typingText + "▏" : currentHint.hintText}
             </ReactMarkdown>
-            {isTyping && <span className="animate-pulse">▊</span>}
           </div>
         </div>
       )}
@@ -489,7 +488,8 @@ export function AIHintsTab({
               <li>Level 1: Subtle conceptual nudges (5 XP)</li>
               <li>Level 2: Approach and algorithm suggestions (10 XP)</li>
               <li>Level 3: Detailed guidance with examples (15 XP)</li>
-              <li>Daily limit: 3 hints per problem</li>
+              <li>Free: 3 hints per problem (sequential), 5 hints/day total</li>
+              <li>Pro: Unlimited hints, can regenerate any level</li>
               <li>Include code for personalized analysis</li>
             </ul>
           </div>

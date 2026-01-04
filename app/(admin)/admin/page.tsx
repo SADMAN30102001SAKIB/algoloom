@@ -1,5 +1,6 @@
 import Link from "next/link";
 import prisma from "@/lib/prisma";
+import { Code2, FileCode, Users, Send, CheckCircle } from "lucide-react";
 
 export default async function AdminDashboard({
   searchParams,
@@ -58,17 +59,33 @@ export default async function AdminDashboard({
         <StatCard
           title="Total Problems"
           value={problemCount}
-          icon="📚"
+          icon={
+            <FileCode className="w-10 h-10 text-cyan-400 group-hover:text-cyan-300 transition-colors" />
+          }
           href="/admin/problems"
         />
         <StatCard
           title="Total Users"
           value={userCount}
-          icon="👥"
+          icon={
+            <Users className="w-10 h-10 text-purple-400 group-hover:text-purple-300 transition-colors" />
+          }
           href="/admin/users"
         />
-        <StatCard title="Submissions" value={submissionCount} icon="📊" />
-        <StatCard title="Test Cases" value={totalTestCases} icon="✅" />
+        <StatCard
+          title="Submissions"
+          value={submissionCount}
+          icon={
+            <Send className="w-10 h-10 text-green-400 group-hover:text-green-300 transition-colors" />
+          }
+        />
+        <StatCard
+          title="Test Cases"
+          value={totalTestCases}
+          icon={
+            <CheckCircle className="w-10 h-10 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+          }
+        />
       </div>
 
       {/* Recent Activity */}
@@ -238,7 +255,7 @@ function StatCard({
 }: {
   title: string;
   value: number;
-  icon: string;
+  icon: React.ReactNode;
   href?: string;
 }) {
   const content = (
@@ -248,7 +265,9 @@ function StatCard({
           <p className="text-slate-400 text-sm">{title}</p>
           <p className="text-3xl font-bold text-white mt-1">{value}</p>
         </div>
-        <div className="text-4xl">{icon}</div>
+        <div className="p-3 rounded bg-transparent flex items-center justify-center transform transition-transform duration-200 group-hover:scale-105">
+          {icon}
+        </div>
       </div>
     </>
   );
@@ -257,14 +276,14 @@ function StatCard({
     return (
       <Link
         href={href}
-        className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-blue-500/50 transition">
+        className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 group hover:border-blue-500/50 hover:bg-slate-700/50 transition">
         {content}
       </Link>
     );
   }
 
   return (
-    <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+    <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 group hover:border-blue-500/50 hover:bg-slate-700/50 transition">
       {content}
     </div>
   );

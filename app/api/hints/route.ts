@@ -39,12 +39,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Problem not found" }, { status: 404 });
     }
 
-    // Get user's Pro status first (needed for hint limit checks)
+    // Get user's Pro status and level (needed for hint limit checks and context)
     const fullUser = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { isPro: true, role: true },
+      select: { isPro: true, role: true, level: true },
     });
     const isPro = fullUser?.isPro || fullUser?.role === "ADMIN";
+    const userLevel = fullUser?.level ?? 1;
 
     // Check existing hints for this problem
     const existingHints = await prisma.hintLog.findMany({
@@ -122,15 +123,13 @@ export async function POST(req: NextRequest) {
     const languagesUsed = Array.from(
       new Set(userSubmissions.map(s => s.language)),
     );
-    const userLevel =
-      userSubmissions.filter(s => s.verdict === "ACCEPTED").length > 0 ? 2 : 1; // Simple level calculation
 
     // Generate hint using Gemini AI
     const hintText = await generateHint({
       problemTitle: problem.title,
       problemDescription: problem.description,
       difficulty: problem.difficulty,
-      userLevel,
+      userLevel, // Use actual user level from DB
       attempts,
       languagesUsed,
       hintLevel,

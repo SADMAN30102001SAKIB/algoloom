@@ -4,6 +4,7 @@ import { useEffect, useState, use } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import confetti from "canvas-confetti";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { IOGuideModal } from "@/components/problems/IOGuideModal";
 import { TestResultsPanel } from "@/components/problems/TestResultsPanel";
 import { ProblemDescription } from "@/components/problems/ProblemDescription";
@@ -205,20 +206,10 @@ export default function ProblemPage({
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative w-20 h-20 mx-auto mb-6">
-            <div className="absolute inset-0 border-4 border-slate-700 rounded-full"></div>
-            <div className="absolute inset-0 border-4 border-transparent border-t-cyan-500 border-r-purple-500 rounded-full animate-spin"></div>
-          </div>
-          <div className="text-white text-xl font-medium">
-            Loading problem...
-          </div>
-          <div className="text-slate-500 text-sm mt-2">
-            Preparing your coding environment
-          </div>
-        </div>
-      </div>
+      <PageLoader
+        message="Loading problem..."
+        subtitle="Preparing your coding environment"
+      />
     );
   }
 

@@ -201,14 +201,6 @@ export async function checkAndAwardAchievements(
                   level: newLevel,
                 },
               });
-
-              // Update leaderboard with new XP
-              updateUserLeaderboard(userId, newXP).catch(error =>
-                console.error(
-                  "Leaderboard update failed after achievement:",
-                  error,
-                ),
-              );
             }
           }
 
@@ -226,6 +218,19 @@ export async function checkAndAwardAchievements(
             error,
           );
         }
+      }
+    }
+
+    // Update leaderboard once at the end if any achievements were unlocked
+    if (unlockedAchievements.length > 0) {
+      const finalUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { xp: true },
+      });
+      if (finalUser) {
+        updateUserLeaderboard(userId, finalUser.xp).catch(error =>
+          console.error("Leaderboard update failed after achievements:", error),
+        );
       }
     }
 

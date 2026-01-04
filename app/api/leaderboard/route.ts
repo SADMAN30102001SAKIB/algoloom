@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 
     const period = getLeaderboardPeriod(timeframe);
 
-    // Fetch leaderboard entries from the pre-computed table
+    // Fetch leaderboard entries ordered by score (descending) for dynamic ranking
     const entries = await prisma.leaderboard.findMany({
       where: {
         period,
@@ -52,27 +52,43 @@ export async function GET(req: NextRequest) {
         },
       },
       orderBy: {
-        rank: "asc",
+        score: "desc", // Order by score to calculate ranks dynamically
       },
       skip: (page - 1) * limit,
       take: limit,
     });
+
+    // Calculate the starting rank for this page
+    // We need to count how many users have higher scores than the first entry on this page
+    const startingRank = (page - 1) * limit + 1;
 
     // Transform to match existing response format
     // Calculate streaks for all users in parallel
     const streakPromises = entries.map(entry => calculateStreak(entry.user.id));
     const streaks = await Promise.all(streakPromises);
 
+    // Calculate ranks dynamically, handling ties (same score = same rank)
+    let currentRank = startingRank;
+    let lastScore = entries[0]?.score ?? 0;
+
     const leaderboard = entries.map((entry, index) => {
+      // Handle ties - if score is different from last, update rank
+      if (index > 0 && entry.score < lastScore) {
+        currentRank = startingRank + index;
+      }
+      lastScore = entry.score;
+
       const level = Math.floor(Math.sqrt(entry.user.xp / 5)) + 1;
 
       return {
-        rank: entry.rank,
+        rank: currentRank,
         userId: entry.user.id,
         name: entry.user.name,
         username: entry.user.username,
         image: entry.user.image,
-        xp: entry.user.xp,
+        // For time-based periods, show period score; for all-time show total XP
+        xp: period === "ALL_TIME" ? entry.user.xp : entry.score,
+        totalXp: entry.user.xp, // Always include total XP for reference
         level,
         problemsSolved: entry.user._count.problemStats,
         totalSubmissions: entry.user._count.submissions,
@@ -131,13 +147,22 @@ export async function POST(req: NextRequest) {
         period: "ALL_TIME",
       },
       select: {
-        rank: true,
+        score: true,
       },
     });
 
     if (!entry) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+
+    // Calculate rank dynamically by counting users with higher scores
+    const higherScoreCount = await prisma.leaderboard.count({
+      where: {
+        period: "ALL_TIME",
+        score: { gt: entry.score },
+      },
+    });
+    const rank = higherScoreCount + 1;
 
     // Get total users on leaderboard
     const totalUsers = await prisma.leaderboard.count({
@@ -146,9 +171,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      rank: entry.rank,
+      rank,
       totalUsers,
-      percentile: Math.round(((totalUsers - entry.rank) / totalUsers) * 100),
+      percentile: Math.round(((totalUsers - rank) / totalUsers) * 100),
     });
   } catch (error) {
     console.error("User rank fetch error:", error);

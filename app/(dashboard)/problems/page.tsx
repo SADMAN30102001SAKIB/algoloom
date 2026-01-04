@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import DailyChallengeBanner from "@/components/DailyChallengeBanner";
+import { PageLoader } from "@/components/ui/PageLoader";
 
 interface Problem {
   id: string;
@@ -148,12 +149,10 @@ function ProblemsPageContent() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-cyan-400 mx-auto mb-4"></div>
-          <div className="text-white text-xl font-medium">Loading...</div>
-        </div>
-      </div>
+      <PageLoader
+        message="Loading problems..."
+        subtitle="Fetching the problem set"
+      />
     );
   }
 

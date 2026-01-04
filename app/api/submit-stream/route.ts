@@ -394,18 +394,8 @@ async function processSubmissionAsync(
     });
     const testCasesPassed = dbTestResults.filter(r => r.passed).length;
 
-    // Update submission with final verdict
-    await prisma.submission.update({
-      where: { id: submissionId },
-      data: {
-        verdict,
-        runtime: Math.round(maxRuntime),
-        memory: maxMemory,
-        testCasesPassed,
-      },
-    });
-
-    // Handle XP and problem stats if accepted - use transaction to prevent race conditions
+    // Handle XP, achievements, and problem stats if accepted - BEFORE updating verdict
+    // This ensures achievements are in DB before polling sees ACCEPTED
     if (verdict === "ACCEPTED") {
       const difficultyXP = { EASY: 10, MEDIUM: 20, HARD: 30 };
       let xpEarned =
@@ -439,7 +429,7 @@ async function processSubmissionAsync(
 
           const wasAlreadySolved = existingStat?.solved === true;
 
-          // Update problem stat with upsert
+          // Update problem stat with upsert (include xpEarned for leaderboard period calculations)
           await tx.problemStat.upsert({
             where: { userId_problemId: { userId, problemId } },
             create: {
@@ -449,12 +439,14 @@ async function processSubmissionAsync(
               solved: true,
               status: "SOLVED",
               solvedAt: submissionCreatedAt, // Use submission's createdAt for accuracy
+              xpEarned: xpEarned, // Track XP including daily bonus for weekly/monthly leaderboard
             },
             update: {
               attempts: { increment: 1 },
               solved: true,
               status: "SOLVED",
               solvedAt: existingStat?.solvedAt ?? submissionCreatedAt, // Set only if not already set
+              // Don't update xpEarned on re-solve - only first solve counts
             },
           });
 
@@ -491,38 +483,60 @@ async function processSubmissionAsync(
         },
       );
 
-      // Check and award achievements (async, don't await)
+      // Check and award achievements (await to ensure they're saved before verdict update)
       // Get attempt count for first_attempt achievement
       const attemptCount = await prisma.problemStat.findUnique({
         where: { userId_problemId: { userId, problemId } },
         select: { attempts: true },
       });
 
-      checkAndAwardAchievements({
+      const unlockedAchievements = await checkAndAwardAchievements({
         userId,
         problemId,
         submissionTime: submissionCreatedAt,
         isFirstAttempt: attemptCount?.attempts === 1,
-      }).catch(error => console.error("Achievement check failed:", error));
+      }).catch(error => {
+        console.error("Achievement check failed:", error);
+        return [];
+      });
+
+      // NOW update submission with final verdict - AFTER achievements are saved to DB
+      // This ensures polling can find achievements when it detects ACCEPTED
+      await prisma.submission.update({
+        where: { id: submissionId },
+        data: {
+          verdict,
+          runtime: Math.round(maxRuntime),
+          memory: maxMemory,
+          testCasesPassed,
+        },
+      });
     } else {
-      // Failed submission - update stats and problem stat
-      // Use transaction to ensure atomicity
-      await prisma.$transaction(async tx => {
-        // Update problem stat - only update if not already solved
-        await tx.problemStat.upsert({
-          where: { userId_problemId: { userId, problemId } },
-          create: {
-            userId,
-            problemId,
-            attempts: 1,
-            solved: false,
-            status: "ATTEMPTED",
-          },
-          update: {
-            attempts: { increment: 1 },
-            // Don't downgrade status if already solved
-          },
-        });
+      // Failed submission - update verdict and stats
+      await prisma.submission.update({
+        where: { id: submissionId },
+        data: {
+          verdict,
+          runtime: Math.round(maxRuntime),
+          memory: maxMemory,
+          testCasesPassed,
+        },
+      });
+
+      // Update problem stat - only update if not already solved
+      await prisma.problemStat.upsert({
+        where: { userId_problemId: { userId, problemId } },
+        create: {
+          userId,
+          problemId,
+          attempts: 1,
+          solved: false,
+          status: "ATTEMPTED",
+        },
+        update: {
+          attempts: { increment: 1 },
+          // Don't downgrade status if already solved
+        },
       });
     }
   } catch (error) {

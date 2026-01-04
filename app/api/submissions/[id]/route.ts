@@ -150,29 +150,41 @@ export async function GET(
       }
     }
 
-    // Get achievements unlocked around the time of this submission (within 30 seconds)
-    // This catches achievements awarded by the background processor
-    const recentAchievements = isComplete
-      ? await prisma.userAchievement.findMany({
-          where: {
-            userId: submission.userId,
-            unlockedAt: {
-              gte: new Date(submission.createdAt.getTime() - 5000), // 5s before
-              lte: new Date(submission.createdAt.getTime() + 30000), // 30s after
+    // Get achievements unlocked around this submission time
+    let unlockedAchievements: Array<{
+      id: string;
+      name: string;
+      icon: string;
+      xpReward: number;
+    }> = [];
+
+    if (isComplete && submission.verdict === "ACCEPTED") {
+      const recentAchievements = await prisma.userAchievement.findMany({
+        where: {
+          userId: submission.userId,
+          unlockedAt: {
+            gte: new Date(submission.createdAt.getTime() - 60000),
+            lte: new Date(Date.now() + 60000),
+          },
+        },
+        include: {
+          achievement: {
+            select: {
+              id: true,
+              name: true,
+              icon: true,
+              xpReward: true,
             },
           },
-          include: {
-            achievement: {
-              select: {
-                id: true,
-                name: true,
-                icon: true,
-                xpReward: true,
-              },
-            },
-          },
-        })
-      : [];
+        },
+      });
+      unlockedAchievements = recentAchievements.map(ua => ({
+        id: ua.achievement.id,
+        name: ua.achievement.name,
+        icon: ua.achievement.icon,
+        xpReward: ua.achievement.xpReward,
+      }));
+    }
 
     return NextResponse.json({
       success: true,
@@ -213,12 +225,7 @@ export async function GET(
         errorMessage: tr.errorMessage,
         statusId: tr.statusId,
       })),
-      unlockedAchievements: recentAchievements.map(ua => ({
-        id: ua.achievement.id,
-        name: ua.achievement.name,
-        icon: ua.achievement.icon,
-        xpReward: ua.achievement.xpReward,
-      })),
+      unlockedAchievements,
     });
   } catch (error) {
     console.error("Submission fetch error:", error);

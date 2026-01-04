@@ -60,6 +60,12 @@ const verdictConfig: Record<
     bgColor: "bg-emerald-500/10",
     icon: CheckCircle,
   },
+  REJECTED: {
+    label: "Failed",
+    color: "text-red-500",
+    bgColor: "bg-red-500/10",
+    icon: XCircle,
+  },
   WRONG_ANSWER: {
     label: "Wrong Answer",
     color: "text-red-500",
@@ -92,16 +98,16 @@ const verdictConfig: Record<
   },
   PENDING: {
     label: "Pending",
-    color: "text-zinc-400",
-    bgColor: "bg-zinc-500/10",
+    color: "text-slate-400",
+    bgColor: "bg-slate-500/10",
     icon: Clock,
   },
 };
 
 const difficultyColors: Record<string, string> = {
-  EASY: "text-emerald-500",
-  MEDIUM: "text-amber-500",
-  HARD: "text-red-500",
+  EASY: "text-green-400",
+  MEDIUM: "text-yellow-400",
+  HARD: "text-red-400",
 };
 
 const languageLabels: Record<string, string> = {
@@ -176,13 +182,11 @@ export default function UserSubmissionsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-2">Error</h1>
-          <p className="text-zinc-400 mb-4">{error}</p>
-          <Link
-            href="/problems"
-            className="text-emerald-500 hover:text-emerald-400">
+          <p className="text-slate-400 mb-4">{error}</p>
+          <Link href="/problems" className="text-cyan-400 hover:text-cyan-300">
             ← Back to Problems
           </Link>
         </div>
@@ -191,7 +195,7 @@ export default function UserSubmissionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-slate-950">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
         <motion.div
@@ -200,7 +204,7 @@ export default function UserSubmissionsPage() {
           className="mb-8">
           <Link
             href={`/profile/${username}`}
-            className="inline-flex items-center gap-2 text-zinc-400 hover:text-white mb-4 transition-colors">
+            className="inline-flex items-center gap-2 text-slate-400 hover:text-white mb-4 transition-colors">
             <ArrowLeft className="w-4 h-4" />
             Back to Profile
           </Link>
@@ -216,8 +220,8 @@ export default function UserSubmissionsPage() {
                   className="rounded-full"
                 />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center">
-                  <span className="text-lg font-bold text-zinc-500">
+                <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center">
+                  <span className="text-lg font-bold text-slate-500">
                     {userInfo.username[0].toUpperCase()}
                   </span>
                 </div>
@@ -226,7 +230,7 @@ export default function UserSubmissionsPage() {
                 <h1 className="text-2xl font-bold text-white">
                   {userInfo.name || userInfo.username}&apos;s Submissions
                 </h1>
-                <p className="text-zinc-400">@{userInfo.username}</p>
+                <p className="text-slate-400">@{userInfo.username}</p>
               </div>
             </div>
           )}
@@ -237,11 +241,11 @@ export default function UserSubmissionsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-6">
+          className="bg-slate-900/50 border border-slate-800 rounded-lg p-4 mb-6">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-zinc-400" />
-              <span className="text-sm text-zinc-400">Filters:</span>
+              <Filter className="w-4 h-4 text-slate-400" />
+              <span className="text-sm text-slate-400">Filters:</span>
             </div>
 
             <select
@@ -250,7 +254,7 @@ export default function UserSubmissionsPage() {
                 setVerdictFilter(e.target.value);
                 handleFilterChange();
               }}
-              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              className="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
               <option value="ALL">All Verdicts</option>
               <option value="ACCEPTED">Accepted</option>
               <option value="WRONG_ANSWER">Wrong Answer</option>
@@ -265,7 +269,7 @@ export default function UserSubmissionsPage() {
                 setLanguageFilter(e.target.value);
                 handleFilterChange();
               }}
-              className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              className="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
               <option value="ALL">All Languages</option>
               <option value="PYTHON">Python</option>
               <option value="JAVASCRIPT">JavaScript</option>
@@ -276,7 +280,7 @@ export default function UserSubmissionsPage() {
             </select>
 
             {pagination && (
-              <span className="ml-auto text-sm text-zinc-500">
+              <span className="ml-auto text-sm text-slate-500">
                 {pagination.total} submission{pagination.total !== 1 ? "s" : ""}
               </span>
             )}
@@ -288,18 +292,18 @@ export default function UserSubmissionsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
+          className="bg-slate-900/50 border border-slate-800 rounded-lg overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400" />
             </div>
           ) : submissions.length === 0 ? (
             <div className="text-center py-20">
-              <Code className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
+              <Code className="w-12 h-12 text-slate-600 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-white mb-2">
                 No submissions found
               </h3>
-              <p className="text-zinc-400">
+              <p className="text-slate-400">
                 {verdictFilter !== "ALL" || languageFilter !== "ALL"
                   ? "Try adjusting your filters"
                   : "This user hasn't made any submissions yet"}
@@ -308,47 +312,47 @@ export default function UserSubmissionsPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-zinc-800/50">
+                <thead className="bg-slate-800/80 border-b border-slate-700">
                   <tr>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-zinc-400">
+                    <th className="text-left px-4 py-3 text-sm font-medium text-slate-400">
                       Problem
                     </th>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-zinc-400">
+                    <th className="text-left px-4 py-3 text-sm font-medium text-slate-400">
                       Verdict
                     </th>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-zinc-400">
+                    <th className="text-left px-4 py-3 text-sm font-medium text-slate-400">
                       Language
                     </th>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-zinc-400">
+                    <th className="text-left px-4 py-3 text-sm font-medium text-slate-400">
                       <span className="flex items-center gap-1">
                         <Cpu className="w-3.5 h-3.5" />
                         Runtime
                       </span>
                     </th>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-zinc-400">
+                    <th className="text-left px-4 py-3 text-sm font-medium text-slate-400">
                       <span className="flex items-center gap-1">
                         <HardDrive className="w-3.5 h-3.5" />
                         Memory
                       </span>
                     </th>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-zinc-400">
+                    <th className="text-left px-4 py-3 text-sm font-medium text-slate-400">
                       Time
                     </th>
                     <th className="px-4 py-3"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-800">
+                <tbody className="divide-y divide-slate-800">
                   {submissions.map((submission, index) => (
                     <motion.tr
                       key={submission.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.03 }}
-                      className="hover:bg-zinc-800/30 transition-colors">
+                      className="hover:bg-slate-800/40 transition-colors">
                       <td className="px-4 py-3">
                         <Link
                           href={`/problems/${submission.problem.slug}`}
-                          className="hover:text-emerald-500 transition-colors">
+                          className="hover:text-cyan-400 transition-colors">
                           <span className="text-white font-medium">
                             {submission.problem.title}
                           </span>
@@ -360,32 +364,32 @@ export default function UserSubmissionsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <VerdictBadge verdict={submission.verdict} />
-                        <span className="ml-2 text-xs text-zinc-500">
+                        <span className="ml-2 text-xs text-slate-500">
                           {submission.testCasesPassed}/
                           {submission.totalTestCases}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-zinc-300">
+                      <td className="px-4 py-3 text-sm text-slate-300">
                         {languageLabels[submission.language] ||
                           submission.language}
                       </td>
-                      <td className="px-4 py-3 text-sm text-zinc-400">
+                      <td className="px-4 py-3 text-sm text-slate-400">
                         {submission.runtime !== null
                           ? `${submission.runtime} ms`
                           : "-"}
                       </td>
-                      <td className="px-4 py-3 text-sm text-zinc-400">
+                      <td className="px-4 py-3 text-sm text-slate-400">
                         {submission.memory !== null
                           ? `${(submission.memory / 1024).toFixed(1)} MB`
                           : "-"}
                       </td>
-                      <td className="px-4 py-3 text-sm text-zinc-500">
+                      <td className="px-4 py-3 text-sm text-slate-500">
                         {formatTimeAgo(submission.submittedAt)}
                       </td>
                       <td className="px-4 py-3">
                         <Link
                           href={`/submissions/${submission.id}`}
-                          className="text-zinc-400 hover:text-white transition-colors"
+                          className="text-slate-400 hover:text-white transition-colors"
                           title="View submission details">
                           <ExternalLink className="w-4 h-4" />
                         </Link>
@@ -408,7 +412,7 @@ export default function UserSubmissionsPage() {
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="p-2 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
               <ChevronLeft className="w-5 h-5" />
             </button>
 
@@ -433,8 +437,8 @@ export default function UserSubmissionsPage() {
                       onClick={() => setPage(pageNum)}
                       className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
                         page === pageNum
-                          ? "bg-emerald-600 text-white"
-                          : "bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700"
+                          ? "bg-cyan-600 text-white"
+                          : "bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700"
                       }`}>
                       {pageNum}
                     </button>
@@ -448,7 +452,7 @@ export default function UserSubmissionsPage() {
                 setPage(p => Math.min(pagination.totalPages, p + 1))
               }
               disabled={page === pagination.totalPages}
-              className="p-2 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
               <ChevronRight className="w-5 h-5" />
             </button>
           </motion.div>

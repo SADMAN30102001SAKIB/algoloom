@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { PageLoader } from "@/components/ui/PageLoader";
 import {
   Trophy,
   Target,
@@ -99,14 +100,14 @@ function StatCard({
   color: string;
 }) {
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
+    <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-4">
       <div className="flex items-center gap-3">
         <div className={`p-2 rounded-lg ${color}`}>
           <Icon className="w-5 h-5" />
         </div>
         <div>
           <p className="text-2xl font-bold text-white">{value}</p>
-          <p className="text-sm text-zinc-400">{label}</p>
+          <p className="text-sm text-slate-400">{label}</p>
         </div>
       </div>
     </div>
@@ -151,24 +152,24 @@ function ActivityHeatmap({ data }: { data: Record<string, number> }) {
   }
 
   const getColor = (count: number) => {
-    if (count === 0) return "bg-zinc-800";
-    if (count === 1) return "bg-emerald-900";
-    if (count <= 3) return "bg-emerald-700";
-    if (count <= 5) return "bg-emerald-500";
-    return "bg-emerald-400";
+    if (count === 0) return "bg-slate-800";
+    if (count === 1) return "bg-green-900";
+    if (count <= 3) return "bg-green-700";
+    if (count <= 5) return "bg-green-500";
+    return "bg-green-400";
   };
 
   const totalSubmissions = Object.values(data).reduce((a, b) => a + b, 0);
   const activeDays = Object.keys(data).length;
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
+    <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-emerald-500" />
+          <Calendar className="w-5 h-5 text-cyan-400" />
           Activity
         </h3>
-        <div className="text-sm text-zinc-400">
+        <div className="text-sm text-slate-400">
           {totalSubmissions} submissions in {activeDays} days
         </div>
       </div>
@@ -191,14 +192,14 @@ function ActivityHeatmap({ data }: { data: Record<string, number> }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-2 mt-3 text-xs text-zinc-500">
+      <div className="flex items-center justify-end gap-2 mt-3 text-xs text-slate-500">
         <span>Less</span>
         <div className="flex gap-1">
-          <div className="w-3 h-3 rounded-sm bg-zinc-800" />
-          <div className="w-3 h-3 rounded-sm bg-emerald-900" />
-          <div className="w-3 h-3 rounded-sm bg-emerald-700" />
-          <div className="w-3 h-3 rounded-sm bg-emerald-500" />
-          <div className="w-3 h-3 rounded-sm bg-emerald-400" />
+          <div className="w-3 h-3 rounded-sm bg-slate-800" />
+          <div className="w-3 h-3 rounded-sm bg-green-900" />
+          <div className="w-3 h-3 rounded-sm bg-green-700" />
+          <div className="w-3 h-3 rounded-sm bg-green-500" />
+          <div className="w-3 h-3 rounded-sm bg-green-400" />
         </div>
         <span>More</span>
       </div>
@@ -211,7 +212,7 @@ function DifficultyBar({ stats }: { stats: Record<string, number> }) {
   if (total === 0) return null;
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
+    <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-4">
       <h3 className="text-lg font-semibold text-white mb-4">Problems Solved</h3>
 
       <div className="space-y-3">
@@ -219,28 +220,28 @@ function DifficultyBar({ stats }: { stats: Record<string, number> }) {
           {
             key: "EASY",
             label: "Easy",
-            color: "bg-emerald-500",
-            textColor: "text-emerald-500",
+            color: "bg-green-400",
+            textColor: "text-green-400",
           },
           {
             key: "MEDIUM",
             label: "Medium",
-            color: "bg-amber-500",
-            textColor: "text-amber-500",
+            color: "bg-yellow-400",
+            textColor: "text-yellow-400",
           },
           {
             key: "HARD",
             label: "Hard",
-            color: "bg-red-500",
-            textColor: "text-red-500",
+            color: "bg-red-400",
+            textColor: "text-red-400",
           },
         ].map(({ key, label, color, textColor }) => (
           <div key={key}>
             <div className="flex justify-between text-sm mb-1">
               <span className={textColor}>{label}</span>
-              <span className="text-zinc-400">{stats[key]}</span>
+              <span className="text-slate-400">{stats[key]}</span>
             </div>
-            <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+            <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
               <div
                 className={`h-full ${color} transition-all duration-500`}
                 style={{ width: `${(stats[key] / Math.max(total, 1)) * 100}%` }}
@@ -269,9 +270,9 @@ function LanguageStats({ stats }: { stats: Record<string, number> }) {
   const sorted = Object.entries(stats).sort((a, b) => b[1] - a[1]);
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
+    <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-4">
       <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-        <Code className="w-5 h-5 text-blue-500" />
+        <Code className="w-5 h-5 text-cyan-400" />
         Languages
       </h3>
 
@@ -279,11 +280,11 @@ function LanguageStats({ stats }: { stats: Record<string, number> }) {
         {sorted.map(([lang, count]) => (
           <div key={lang} className="flex items-center gap-3">
             <div
-              className={`w-3 h-3 rounded-full ${colors[lang] || "bg-zinc-500"}`}
+              className={`w-3 h-3 rounded-full ${colors[lang] || "bg-slate-500"}`}
             />
-            <span className="text-sm text-zinc-300 flex-1">{lang}</span>
-            <span className="text-sm text-zinc-500">{count}</span>
-            <span className="text-xs text-zinc-600">
+            <span className="text-sm text-slate-300 flex-1">{lang}</span>
+            <span className="text-sm text-slate-500">{count}</span>
+            <span className="text-xs text-slate-600">
               ({Math.round((count / total) * 100)}%)
             </span>
           </div>
@@ -299,11 +300,11 @@ function AchievementCard({
   achievement: UserProfile["achievements"][0];
 }) {
   return (
-    <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3 flex items-center gap-3">
+    <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 flex items-center gap-3">
       <span className="text-2xl">{achievement.icon}</span>
       <div className="flex-1 min-w-0">
         <p className="font-medium text-white truncate">{achievement.name}</p>
-        <p className="text-xs text-zinc-400 truncate">
+        <p className="text-xs text-slate-400 truncate">
           {achievement.description}
         </p>
       </div>
@@ -317,28 +318,28 @@ function RecentSolvedList({
   problems: UserProfile["recentSolved"];
 }) {
   const difficultyColors = {
-    EASY: "text-emerald-500",
-    MEDIUM: "text-amber-500",
-    HARD: "text-red-500",
+    EASY: "text-green-400",
+    MEDIUM: "text-yellow-400",
+    HARD: "text-red-400",
   };
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
+    <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-4">
       <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-        <CheckCircle className="w-5 h-5 text-emerald-500" />
+        <CheckCircle className="w-5 h-5 text-green-400" />
         Recently Solved
       </h3>
 
       {problems.length === 0 ? (
-        <p className="text-zinc-500 text-sm">No problems solved yet</p>
+        <p className="text-slate-500 text-sm">No problems solved yet</p>
       ) : (
         <div className="space-y-2">
           {problems.map(problem => (
             <Link
               key={problem.problemId}
               href={`/problems/${problem.slug}`}
-              className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-800 transition-colors">
-              <span className="text-zinc-300 hover:text-white truncate flex-1">
+              className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-800/50 transition-colors">
+              <span className="text-slate-300 hover:text-white truncate flex-1">
                 {problem.title}
               </span>
               <span
@@ -383,23 +384,19 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500" />
-      </div>
+      <PageLoader message="Loading profile..." subtitle="Fetching user data" />
     );
   }
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-2">User Not Found</h1>
-          <p className="text-zinc-400 mb-4">
+          <p className="text-slate-400 mb-4">
             {error || "This user doesn't exist"}
           </p>
-          <Link
-            href="/problems"
-            className="text-emerald-500 hover:text-emerald-400">
+          <Link href="/problems" className="text-cyan-400 hover:text-cyan-300">
             ← Back to Problems
           </Link>
         </div>
@@ -408,13 +405,13 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-slate-950">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-6">
+          className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 mb-6">
           <div className="flex flex-col md:flex-row gap-6">
             {/* Avatar */}
             <div className="flex-shrink-0">
@@ -424,11 +421,11 @@ export default function ProfilePage() {
                   alt={profile.username}
                   width={120}
                   height={120}
-                  className="rounded-full border-4 border-zinc-700"
+                  className="rounded-full border-4 border-slate-700"
                 />
               ) : (
-                <div className="w-[120px] h-[120px] rounded-full bg-zinc-800 flex items-center justify-center border-4 border-zinc-700">
-                  <span className="text-4xl font-bold text-zinc-500">
+                <div className="w-[120px] h-[120px] rounded-full bg-slate-800 flex items-center justify-center border-4 border-slate-700">
+                  <span className="text-4xl font-bold text-slate-500">
                     {profile.username[0].toUpperCase()}
                   </span>
                 </div>
@@ -464,17 +461,19 @@ export default function ProfilePage() {
                       targetUsername={profile.username}
                     />
                   </div>
-                  <p className="text-zinc-400 truncate max-w-[250px] md:max-w-[350px]">
+                  <p className="text-slate-400 truncate max-w-[250px] md:max-w-[350px]">
                     @{profile.username}
                   </p>
                   {profile.bio && (
-                    <p className="text-zinc-300 mt-2 max-w-lg">{profile.bio}</p>
+                    <p className="text-slate-300 mt-2 max-w-lg">
+                      {profile.bio}
+                    </p>
                   )}
 
                   {/* Social Links */}
                   <div className="flex flex-wrap items-center gap-4 mt-3">
                     {profile.location && (
-                      <span className="flex items-center gap-1 text-sm text-zinc-400">
+                      <span className="flex items-center gap-1 text-sm text-slate-400">
                         <MapPin className="w-4 h-4" />
                         {profile.location}
                       </span>
@@ -484,7 +483,7 @@ export default function ProfilePage() {
                         href={profile.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-sm text-zinc-400 hover:text-emerald-500">
+                        className="flex items-center gap-1 text-sm text-slate-400 hover:text-cyan-400">
                         <LinkIcon className="w-4 h-4" />
                         Website
                         <ExternalLink className="w-3 h-3" />
@@ -495,7 +494,7 @@ export default function ProfilePage() {
                         href={profile.githubUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-sm text-zinc-400 hover:text-white">
+                        className="flex items-center gap-1 text-sm text-slate-400 hover:text-white">
                         <GithubIcon />
                         GitHub
                       </a>
@@ -505,14 +504,14 @@ export default function ProfilePage() {
                         href={profile.linkedinUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-sm text-zinc-400 hover:text-blue-500">
+                        className="flex items-center gap-1 text-sm text-slate-400 hover:text-blue-500">
                         <LinkedinIcon />
                         LinkedIn
                       </a>
                     )}
                     <Link
                       href={`/profile/${profile.username}/submissions`}
-                      className="flex items-center gap-1 text-sm text-zinc-400 hover:text-emerald-500">
+                      className="flex items-center gap-1 text-sm text-slate-400 hover:text-cyan-400">
                       <FileText className="w-4 h-4" />
                       All Submissions
                     </Link>
@@ -520,20 +519,20 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Level Badge */}
-                <div className="bg-zinc-800 rounded-lg p-4 text-center min-w-[140px]">
-                  <div className="text-3xl font-bold text-emerald-500">
+                <div className="bg-slate-800 rounded-lg p-4 text-center min-w-[140px]">
+                  <div className="text-3xl font-bold text-cyan-400">
                     Lv. {profile.level}
                   </div>
-                  <div className="text-sm text-zinc-400 mt-1">
+                  <div className="text-sm text-slate-400 mt-1">
                     {profile.xp.toLocaleString()} XP
                   </div>
-                  <div className="mt-2 h-2 bg-zinc-700 rounded-full overflow-hidden">
+                  <div className="mt-2 h-2 bg-slate-700 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-emerald-500 transition-all duration-500"
+                      className="h-full bg-cyan-500 transition-all duration-500"
                       style={{ width: `${profile.levelProgress.percentage}%` }}
                     />
                   </div>
-                  <div className="text-xs text-zinc-500 mt-1">
+                  <div className="text-xs text-slate-500 mt-1">
                     {profile.levelProgress.current}/
                     {profile.levelProgress.required} XP
                   </div>
@@ -559,7 +558,7 @@ export default function ProfilePage() {
             icon={Target}
             label="Problems Solved"
             value={profile.problemsSolved}
-            color="bg-emerald-500/20 text-emerald-500"
+            color="bg-green-400/20 text-green-400"
           />
           <StatCard
             icon={Flame}
@@ -621,14 +620,14 @@ export default function ProfilePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
+            className="bg-slate-900/50 border border-slate-800 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <Award className="w-5 h-5 text-amber-500" />
               Achievements ({profile.achievements.length})
             </h3>
 
             {profile.achievements.length === 0 ? (
-              <p className="text-zinc-500 text-sm">No achievements yet</p>
+              <p className="text-slate-500 text-sm">No achievements yet</p>
             ) : (
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {profile.achievements.map(achievement => (
@@ -647,7 +646,7 @@ export default function ProfilePage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="text-center mt-8 text-sm text-zinc-500">
+          className="text-center mt-8 text-sm text-slate-500">
           Member since{" "}
           {new Date(profile.memberSince).toLocaleDateString("en-US", {
             month: "long",

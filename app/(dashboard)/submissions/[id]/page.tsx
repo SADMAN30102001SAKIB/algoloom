@@ -2,6 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { PageLoader } from "@/components/ui/PageLoader";
 
 interface TestResult {
   testCaseId: string;
@@ -167,9 +168,10 @@ export default function SubmissionPage({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-slate-400">Loading submission...</div>
-      </div>
+      <PageLoader
+        message="Loading submission..."
+        subtitle="Fetching submission details"
+      />
     );
   }
 

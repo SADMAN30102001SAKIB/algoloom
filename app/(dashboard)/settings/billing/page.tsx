@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { PageLoader } from "@/components/ui/PageLoader";
 import {
   Crown,
   CreditCard,
@@ -102,14 +103,10 @@ function BillingContent() {
 
   if (authStatus === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-slate-950">
-        <Navbar />
-        <main className="container mx-auto px-4 py-8 max-w-4xl">
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
-          </div>
-        </main>
-      </div>
+      <PageLoader
+        message="Loading billing..."
+        subtitle="Fetching subscription details"
+      />
     );
   }
 

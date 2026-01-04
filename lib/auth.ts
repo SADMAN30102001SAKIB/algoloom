@@ -136,7 +136,7 @@ export const authConfig: NextAuthConfig = {
       }
       return true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger }) {
       // For OAuth providers, fetch user data from database since NextAuth's user object
       // only contains provider data (email, name, image), not our database fields
       if (account && token.email) {
@@ -169,6 +169,24 @@ export const authConfig: NextAuthConfig = {
         token.emailVerified = user.emailVerified;
         token.isPro = user.isPro;
         token.subscriptionPlan = user.subscriptionPlan;
+      } else if (trigger === "update" && token.id) {
+        // Manual refresh triggered by updateSession() - fetch fresh data from DB
+        // Used after subscription changes to instantly update Pro status
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id },
+          select: {
+            isPro: true,
+            role: true,
+            subscription: {
+              select: { plan: true },
+            },
+          },
+        });
+        if (dbUser) {
+          token.isPro = dbUser.isPro;
+          token.role = dbUser.role;
+          token.subscriptionPlan = dbUser.subscription?.plan ?? null;
+        }
       }
       return token;
     },

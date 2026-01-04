@@ -55,6 +55,24 @@ export async function POST(request: NextRequest) {
         where: { id: user.id },
         data: { stripeCustomerId },
       });
+    } else {
+      // Clear any pending invoice items that might cause "order updated" error
+      const pendingItems = await stripe.invoiceItems.list({
+        customer: stripeCustomerId,
+        pending: true,
+      });
+      for (const item of pendingItems.data) {
+        await stripe.invoiceItems.del(item.id);
+      }
+
+      // Expire any existing open checkout sessions to prevent conflicts
+      const openSessions = await stripe.checkout.sessions.list({
+        customer: stripeCustomerId,
+        status: "open",
+      });
+      for (const sess of openSessions.data) {
+        await stripe.checkout.sessions.expire(sess.id);
+      }
     }
 
     // Create Stripe Checkout Session

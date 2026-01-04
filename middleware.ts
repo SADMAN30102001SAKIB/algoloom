@@ -111,15 +111,6 @@ export async function middleware(request: NextRequest) {
   if (isAdminPath) {
     const session = await authEdge();
 
-    // Debug: log session info
-    console.log("[Middleware] Admin route check:", {
-      pathname,
-      hasSession: !!session,
-      hasUser: !!session?.user,
-      userRole: session?.user?.role,
-      userEmail: session?.user?.email,
-    });
-
     if (!session?.user) {
       const signInUrl = new URL("/login", request.url);
       signInUrl.searchParams.set("callbackUrl", pathname);

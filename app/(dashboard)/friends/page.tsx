@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { PageLoader } from "@/components/ui/PageLoader";
 import {
   Users,
   UserPlus,
@@ -176,24 +177,25 @@ export default function FriendsPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500" />
-      </div>
+      <PageLoader
+        message="Loading friends..."
+        subtitle="Fetching your connections"
+      />
     );
   }
 
   if (!session?.user) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <Users className="w-16 h-16 text-zinc-700 mx-auto mb-4" />
+          <Users className="w-16 h-16 text-slate-700 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white mb-2">
             Sign in to see friends
           </h1>
-          <p className="text-zinc-400 mb-4">Connect with other developers</p>
+          <p className="text-slate-400 mb-4">Connect with other developers</p>
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+            className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors">
             Sign In
           </Link>
         </div>
@@ -218,19 +220,19 @@ export default function FriendsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-950 py-8 px-4">
+    <div className="min-h-screen bg-slate-950 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <Users className="w-8 h-8 text-emerald-500" />
+            <Users className="w-8 h-8 text-cyan-500" />
             Friends
           </h1>
-          <p className="text-zinc-400 mt-1">Connect with other developers</p>
+          <p className="text-slate-400 mt-1">Connect with other developers</p>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-zinc-800 pb-4">
+        <div className="flex gap-2 mb-6 border-b border-slate-800 pb-4">
           {tabs.map(tab => {
             const Icon = tab.icon;
             return (
@@ -239,8 +241,8 @@ export default function FriendsPage() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                   activeTab === tab.id
-                    ? "bg-emerald-500/20 text-emerald-500"
-                    : "text-zinc-400 hover:text-white hover:bg-zinc-800"
+                    ? "bg-cyan-500/20 text-cyan-400"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800"
                 }`}>
                 <Icon className="w-4 h-4" />
                 {tab.label}
@@ -248,8 +250,8 @@ export default function FriendsPage() {
                   <span
                     className={`px-2 py-0.5 text-xs rounded-full ${
                       activeTab === tab.id
-                        ? "bg-emerald-500 text-white"
-                        : "bg-zinc-700 text-zinc-300"
+                        ? "bg-cyan-500 text-white"
+                        : "bg-slate-700 text-slate-300"
                     }`}>
                     {tab.count}
                   </span>
@@ -270,9 +272,9 @@ export default function FriendsPage() {
               className="space-y-3">
               {friends.length === 0 ? (
                 <div className="text-center py-12">
-                  <Users className="w-12 h-12 text-zinc-700 mx-auto mb-3" />
-                  <p className="text-zinc-400">No friends yet</p>
-                  <p className="text-zinc-500 text-sm mt-1">
+                  <Users className="w-12 h-12 text-slate-700 mx-auto mb-3" />
+                  <p className="text-slate-400">No friends yet</p>
+                  <p className="text-slate-500 text-sm mt-1">
                     Visit profiles to send friend requests
                   </p>
                 </div>
@@ -304,7 +306,7 @@ export default function FriendsPage() {
                   Pending Requests ({pendingRequests.length})
                 </h3>
                 {pendingRequests.length === 0 ? (
-                  <p className="text-zinc-500 text-sm">No pending requests</p>
+                  <p className="text-slate-500 text-sm">No pending requests</p>
                 ) : (
                   <div className="space-y-3">
                     {pendingRequests.map(request => (
@@ -328,7 +330,7 @@ export default function FriendsPage() {
                   Sent Requests ({sentRequests.length})
                 </h3>
                 {sentRequests.length === 0 ? (
-                  <p className="text-zinc-500 text-sm">No sent requests</p>
+                  <p className="text-slate-500 text-sm">No sent requests</p>
                 ) : (
                   <div className="space-y-3">
                     {sentRequests.map(request => (
@@ -355,9 +357,9 @@ export default function FriendsPage() {
               className="space-y-3">
               {activity.length === 0 ? (
                 <div className="text-center py-12">
-                  <Activity className="w-12 h-12 text-zinc-700 mx-auto mb-3" />
-                  <p className="text-zinc-400">No recent activity</p>
-                  <p className="text-zinc-500 text-sm mt-1">
+                  <Activity className="w-12 h-12 text-slate-700 mx-auto mb-3" />
+                  <p className="text-slate-400">No recent activity</p>
+                  <p className="text-slate-500 text-sm mt-1">
                     Add friends to see their activity
                   </p>
                 </div>
@@ -390,7 +392,7 @@ function FriendCard({
   loading?: boolean;
 }) {
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 flex items-center justify-between">
+    <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-4 flex items-center justify-between">
       <Link
         href={`/profile/${friend.user.username}`}
         className="flex items-center gap-3 flex-1 hover:opacity-80 transition-opacity">
@@ -403,8 +405,8 @@ function FriendCard({
             className="rounded-full"
           />
         ) : (
-          <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center">
-            <span className="text-lg font-bold text-zinc-500">
+          <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center">
+            <span className="text-lg font-bold text-slate-500">
               {friend.user.username[0].toUpperCase()}
             </span>
           </div>
@@ -413,11 +415,11 @@ function FriendCard({
           <p className="font-medium text-white">
             {friend.user.name || friend.user.username}
           </p>
-          <p className="text-sm text-zinc-400">@{friend.user.username}</p>
+          <p className="text-sm text-slate-400">@{friend.user.username}</p>
         </div>
         <div className="ml-auto mr-4 text-right">
-          <p className="text-sm text-emerald-500">Lv. {friend.user.level}</p>
-          <p className="text-xs text-zinc-500">
+          <p className="text-sm text-cyan-400">Lv. {friend.user.level}</p>
+          <p className="text-xs text-slate-500">
             {friend.user.xp.toLocaleString()} XP
           </p>
         </div>
@@ -428,10 +430,10 @@ function FriendCard({
           <button
             onClick={onUnfriend}
             disabled={loading}
-            className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
+            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
             title="Unfriend">
             {loading ? (
-              <div className="w-5 h-5 border-2 border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-slate-600 border-t-slate-300 rounded-full animate-spin" />
             ) : (
               <UserMinus className="w-5 h-5" />
             )}
@@ -443,7 +445,7 @@ function FriendCard({
             <button
               onClick={onAccept}
               disabled={loading}
-              className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 text-sm">
+              className="flex items-center gap-1 px-3 py-1.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors disabled:opacity-50 text-sm">
               {loading ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
@@ -456,7 +458,7 @@ function FriendCard({
             <button
               onClick={onDecline}
               disabled={loading}
-              className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
+              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
               title="Decline">
               <X className="w-5 h-5" />
             </button>
@@ -467,9 +469,9 @@ function FriendCard({
           <button
             onClick={onCancel}
             disabled={loading}
-            className="flex items-center gap-1 px-3 py-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50 text-sm">
+            className="flex items-center gap-1 px-3 py-1.5 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50 text-sm">
             {loading ? (
-              <div className="w-4 h-4 border-2 border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-slate-600 border-t-slate-300 rounded-full animate-spin" />
             ) : (
               <>
                 <X className="w-4 h-4" />
@@ -487,7 +489,7 @@ function ActivityCard({ item }: { item: ActivityItem }) {
   const getIcon = () => {
     switch (item.type) {
       case "solved":
-        return <Target className="w-5 h-5 text-emerald-500" />;
+        return <Target className="w-5 h-5 text-green-400" />;
       case "achievement":
         return <Award className="w-5 h-5 text-amber-500" />;
       case "streak":
@@ -497,7 +499,7 @@ function ActivityCard({ item }: { item: ActivityItem }) {
       case "daily":
         return <Target className="w-5 h-5 text-blue-500" />;
       default:
-        return <Activity className="w-5 h-5 text-zinc-500" />;
+        return <Activity className="w-5 h-5 text-slate-500" />;
     }
   };
 
@@ -509,7 +511,7 @@ function ActivityCard({ item }: { item: ActivityItem }) {
             solved{" "}
             <Link
               href={`/problems/${item.data.problemSlug}`}
-              className="text-emerald-500 hover:underline">
+              className="text-green-400 hover:underline">
               {item.data.problemTitle}
             </Link>
           </>
@@ -547,7 +549,7 @@ function ActivityCard({ item }: { item: ActivityItem }) {
   };
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 flex items-start gap-3">
+    <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-4 flex items-start gap-3">
       <Link href={`/profile/${item.user.username}`}>
         {item.user.image ? (
           <Image
@@ -558,23 +560,23 @@ function ActivityCard({ item }: { item: ActivityItem }) {
             className="rounded-full"
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center">
-            <span className="text-sm font-bold text-zinc-500">
+          <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center">
+            <span className="text-sm font-bold text-slate-500">
               {item.user.username[0].toUpperCase()}
             </span>
           </div>
         )}
       </Link>
       <div className="flex-1">
-        <p className="text-zinc-300">
+        <p className="text-slate-300">
           <Link
             href={`/profile/${item.user.username}`}
-            className="font-medium text-white hover:text-emerald-500">
+            className="font-medium text-white hover:text-cyan-400">
             {item.user.name || item.user.username}
           </Link>{" "}
           {getMessage()}
         </p>
-        <p className="text-xs text-zinc-500 mt-1">{timeAgo(item.createdAt)}</p>
+        <p className="text-xs text-slate-500 mt-1">{timeAgo(item.createdAt)}</p>
       </div>
       <div className="flex-shrink-0">{getIcon()}</div>
     </div>

@@ -168,21 +168,26 @@ export function useSubmission(problemSlug: string) {
               newLevel: pollData.level || 1,
             });
 
-            // Show achievement toasts
+            // Show achievement toasts with staggered delay
             if (pollData.unlockedAchievements?.length > 0) {
               pollData.unlockedAchievements.forEach(
-                (achievement: {
-                  name: string;
-                  icon: string;
-                  xpReward: number;
-                }) => {
-                  toast.success(
-                    `${achievement.icon} Achievement Unlocked: ${achievement.name}!`,
-                    {
-                      description: `+${achievement.xpReward} XP`,
-                      duration: 5000,
-                    },
-                  );
+                (
+                  achievement: {
+                    name: string;
+                    icon: string;
+                    xpReward: number;
+                  },
+                  index: number,
+                ) => {
+                  setTimeout(() => {
+                    toast.success(
+                      `${achievement.icon} Achievement Unlocked: ${achievement.name}!`,
+                      {
+                        description: `+${achievement.xpReward} XP`,
+                        duration: 5000,
+                      },
+                    );
+                  }, index * 2000); // 2000ms delay between each toast
                 },
               );
             }

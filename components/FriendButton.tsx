@@ -179,8 +179,8 @@ export default function FriendButton({
 
   if (loading) {
     return (
-      <div className={`px-4 py-2 bg-zinc-800 rounded-lg ${className}`}>
-        <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
+      <div className={`px-4 py-2 bg-slate-800 rounded-lg ${className}`}>
+        <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
       </div>
     );
   }
@@ -189,7 +189,7 @@ export default function FriendButton({
     return (
       <button
         disabled
-        className={`flex items-center gap-2 px-4 py-2 bg-zinc-800 text-zinc-400 rounded-lg ${className}`}>
+        className={`flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-400 rounded-lg ${className}`}>
         <Loader2 className="w-4 h-4 animate-spin" />
       </button>
     );
@@ -200,7 +200,7 @@ export default function FriendButton({
       return (
         <button
           onClick={handleAddFriend}
-          className={`flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors ${className}`}>
+          className={`flex items-center gap-2 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors ${className}`}>
           <UserPlus className="w-4 h-4" />
           Add Friend
         </button>
@@ -210,7 +210,7 @@ export default function FriendButton({
       return (
         <button
           onClick={handleCancel}
-          className={`flex items-center gap-2 px-4 py-2 bg-zinc-800 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors ${className}`}>
+          className={`flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors ${className}`}>
           <Clock className="w-4 h-4" />
           Pending
         </button>
@@ -221,13 +221,13 @@ export default function FriendButton({
         <div className={`flex items-center gap-2 ${className}`}>
           <button
             onClick={handleAccept}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+            className="flex items-center gap-2 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors">
             <UserCheck className="w-4 h-4" />
             Accept
           </button>
           <button
             onClick={handleCancel}
-            className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors">
+            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors">
             <UserMinus className="w-4 h-4" />
           </button>
         </div>
@@ -237,7 +237,7 @@ export default function FriendButton({
       return (
         <button
           onClick={handleUnfriend}
-          className={`flex items-center gap-2 px-4 py-2 bg-zinc-800 text-emerald-500 rounded-lg hover:bg-zinc-700 transition-colors ${className}`}>
+          className={`flex items-center gap-2 px-4 py-2 bg-slate-800 text-cyan-400 rounded-lg hover:bg-slate-700 transition-colors ${className}`}>
           <UserCheck className="w-4 h-4" />
           Friends
         </button>

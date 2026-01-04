@@ -24,6 +24,10 @@ export const metadata: Metadata = {
       "Level up your coding skills with AlgoLoom. Solve algorithmic problems, get AI-powered hints, and compete on the leaderboard.",
     type: "website",
   },
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
@@ -33,6 +37,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/favicon.svg" />
+        <link rel="shortcut icon" href="/favicon.svg" />
+      </head>
       <body className={inter.className}>
         <Providers>{children}</Providers>
       </body>

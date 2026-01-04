@@ -61,6 +61,12 @@ const verdictConfig: Record<
     bgColor: "bg-emerald-500/10",
     icon: CheckCircle,
   },
+  REJECTED: {
+    label: "Failed",
+    color: "text-red-500",
+    bgColor: "bg-red-500/10",
+    icon: XCircle,
+  },
   WRONG_ANSWER: {
     label: "Wrong Answer",
     color: "text-red-500",

@@ -5,6 +5,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { PageLoader } from "@/components/ui/PageLoader";
+import { Spinner } from "@/components/ui/Spinner";
 import {
   Trophy,
   Medal,
@@ -54,8 +56,8 @@ function RankBadge({ rank }: { rank: number }) {
   }
   if (rank === 2) {
     return (
-      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-zinc-400/20">
-        <Medal className="w-5 h-5 text-zinc-400" />
+      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-400/20">
+        <Medal className="w-5 h-5 text-slate-400" />
       </div>
     );
   }
@@ -68,7 +70,7 @@ function RankBadge({ rank }: { rank: number }) {
   }
   return (
     <div className="flex items-center justify-center w-8 h-8">
-      <span className="text-zinc-400 font-medium">{rank}</span>
+      <span className="text-slate-400 font-medium">{rank}</span>
     </div>
   );
 }
@@ -91,8 +93,8 @@ function LeaderboardRow({
         href={`/profile/${entry.username}`}
         className={`flex items-center gap-4 p-4 transition-colors ${
           isTopThree
-            ? "bg-zinc-800/50 hover:bg-zinc-800"
-            : "hover:bg-zinc-800/50"
+            ? "bg-slate-800/50 hover:bg-slate-800"
+            : "hover:bg-slate-800/50"
         }`}>
         {/* Rank */}
         <RankBadge rank={entry.rank} />
@@ -108,8 +110,8 @@ function LeaderboardRow({
               className="rounded-full"
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center">
-              <span className="text-lg font-bold text-zinc-500">
+            <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center">
+              <span className="text-lg font-bold text-slate-500">
                 {entry.username[0].toUpperCase()}
               </span>
             </div>
@@ -121,35 +123,35 @@ function LeaderboardRow({
           <p className="font-medium text-white truncate">
             {entry.name || entry.username}
           </p>
-          <p className="text-sm text-zinc-500">@{entry.username}</p>
+          <p className="text-sm text-slate-500">@{entry.username}</p>
         </div>
 
         {/* Stats */}
         <div className="hidden md:flex items-center gap-6">
           <div className="text-center">
-            <p className="text-sm font-medium text-emerald-500">
+            <p className="text-sm font-medium text-green-400">
               {entry.problemsSolved}
             </p>
-            <p className="text-xs text-zinc-500">Solved</p>
+            <p className="text-xs text-slate-500">Solved</p>
           </div>
           <div className="text-center">
-            <p className="text-sm font-medium text-blue-500">
+            <p className="text-sm font-medium text-cyan-400">
               {entry.acceptanceRate}%
             </p>
-            <p className="text-xs text-zinc-500">Rate</p>
+            <p className="text-xs text-slate-500">Rate</p>
           </div>
           <div className="text-center">
             <p className="text-sm font-medium text-purple-500">
               {entry.achievementsCount}
             </p>
-            <p className="text-xs text-zinc-500">Badges</p>
+            <p className="text-xs text-slate-500">Badges</p>
           </div>
         </div>
 
         {/* Level & XP */}
         <div className="text-right">
-          <p className="text-lg font-bold text-emerald-500">Lv.{entry.level}</p>
-          <p className="text-sm text-zinc-400">
+          <p className="text-lg font-bold text-cyan-400">Lv.{entry.level}</p>
+          <p className="text-sm text-slate-400">
             {entry.xp.toLocaleString()} XP
           </p>
         </div>
@@ -195,7 +197,7 @@ function LeaderboardContent() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-slate-950">
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <motion.div
@@ -206,7 +208,7 @@ function LeaderboardContent() {
             <Trophy className="w-8 h-8 text-amber-500" />
             <h1 className="text-3xl font-bold text-white">Leaderboard</h1>
           </div>
-          <p className="text-zinc-400">
+          <p className="text-slate-400">
             Top developers ranked by XP and achievements
           </p>
         </motion.div>
@@ -223,8 +225,8 @@ function LeaderboardContent() {
               onClick={() => updateParams({ timeframe: tf.value, page: "1" })}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 timeframe === tf.value
-                  ? "bg-emerald-500 text-white"
-                  : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
+                  ? "bg-cyan-500 text-white"
+                  : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white"
               }`}>
               {tf.label}
             </button>
@@ -234,7 +236,7 @@ function LeaderboardContent() {
         {/* Loading State */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500" />
+            <Spinner size="md" />
           </div>
         ) : data && data.leaderboard.length > 0 ? (
           <>
@@ -243,8 +245,8 @@ function LeaderboardContent() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-              <div className="divide-y divide-zinc-800">
+              className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
+              <div className="divide-y divide-slate-800">
                 {data.leaderboard.map((entry, index) => (
                   <LeaderboardRow
                     key={entry.userId}
@@ -267,12 +269,12 @@ function LeaderboardContent() {
                     updateParams({ page: String(Math.max(1, page - 1)) })
                   }
                   disabled={page === 1}
-                  className="flex items-center gap-1 px-4 py-2 rounded-lg bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                  className="flex items-center gap-1 px-4 py-2 rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                   <ChevronLeft className="w-4 h-4" />
                   Previous
                 </button>
 
-                <span className="text-zinc-400">
+                <span className="text-slate-400">
                   Page {page} of {data.pagination.totalPages}
                 </span>
 
@@ -285,7 +287,7 @@ function LeaderboardContent() {
                     })
                   }
                   disabled={page === data.pagination.totalPages}
-                  className="flex items-center gap-1 px-4 py-2 rounded-lg bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                  className="flex items-center gap-1 px-4 py-2 rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                   Next
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -297,16 +299,16 @@ function LeaderboardContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-center py-20">
-            <Trophy className="w-16 h-16 text-zinc-700 mx-auto mb-4" />
+            <Trophy className="w-16 h-16 text-slate-700 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-white mb-2">
               No Rankings Yet
             </h2>
-            <p className="text-zinc-400 mb-4">
+            <p className="text-slate-400 mb-4">
               Be the first to climb the leaderboard!
             </p>
             <Link
               href="/problems"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors">
+              className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors">
               <Target className="w-4 h-4" />
               Start Solving
             </Link>
@@ -319,7 +321,7 @@ function LeaderboardContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-center mt-6 text-sm text-zinc-500">
+            className="text-center mt-6 text-sm text-slate-500">
             Showing {(page - 1) * 25 + 1}-
             {Math.min(page * 25, data.pagination.totalCount)} of{" "}
             {data.pagination.totalCount} developers
@@ -332,17 +334,17 @@ function LeaderboardContent() {
 
 function LeaderboardLoading() {
   return (
-    <div className="min-h-screen bg-zinc-950 py-12 px-4">
+    <div className="min-h-screen bg-slate-950 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
-          <div className="h-10 w-48 bg-zinc-800 rounded animate-pulse mx-auto mb-4" />
-          <div className="h-4 w-64 bg-zinc-800 rounded animate-pulse mx-auto" />
+          <div className="h-10 w-48 bg-slate-800 rounded animate-pulse mx-auto mb-4" />
+          <div className="h-4 w-64 bg-slate-800 rounded animate-pulse mx-auto" />
         </div>
         <div className="space-y-4">
           {[...Array(10)].map((_, i) => (
             <div
               key={i}
-              className="h-16 bg-zinc-900/50 rounded-xl animate-pulse"
+              className="h-16 bg-slate-900/50 rounded-xl animate-pulse"
             />
           ))}
         </div>
