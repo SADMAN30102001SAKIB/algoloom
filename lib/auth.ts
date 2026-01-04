@@ -148,7 +148,9 @@ export const authConfig: NextAuthConfig = {
             username: true,
             emailVerified: true,
             isPro: true,
-            subscriptionPlan: true,
+            subscription: {
+              select: { plan: true },
+            },
           },
         });
         if (dbUser) {
@@ -157,7 +159,7 @@ export const authConfig: NextAuthConfig = {
           token.username = dbUser.username;
           token.emailVerified = dbUser.emailVerified;
           token.isPro = dbUser.isPro;
-          token.subscriptionPlan = dbUser.subscriptionPlan;
+          token.subscriptionPlan = dbUser.subscription?.plan ?? null;
         }
       } else if (user?.id) {
         // For credentials provider, user object already has database fields
