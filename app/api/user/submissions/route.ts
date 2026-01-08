@@ -18,11 +18,12 @@ export async function GET(req: NextRequest) {
     const verdict = searchParams.get("verdict");
     const language = searchParams.get("language");
     const problemId = searchParams.get("problemId");
+    const hintsFilter = searchParams.get("hints"); // 'USED', 'NOT_USED', or null
 
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: Record<string, unknown> = { userId: user.id };
+    const where: any = { userId: user.id };
 
     if (verdict && verdict !== "ALL") {
       where.verdict = verdict;
@@ -34,7 +35,25 @@ export async function GET(req: NextRequest) {
       where.problemId = problemId;
     }
 
-    const [submissions, total] = await Promise.all([
+    // Handle hints filtering
+    if (hintsFilter === "USED" || hintsFilter === "NOT_USED") {
+      const hintStats = await prisma.problemStat.findMany({
+        where: {
+          userId: user.id,
+          hintsUsed: true,
+        },
+        select: { problemId: true },
+      });
+      const problemIdsWithHints = hintStats.map(s => s.problemId);
+
+      if (hintsFilter === "USED") {
+        where.problemId = { in: problemIdsWithHints };
+      } else {
+        where.problemId = { notIn: problemIdsWithHints };
+      }
+    }
+
+    const [submissions, total, problemStats] = await Promise.all([
       prisma.submission.findMany({
         where,
         select: {
@@ -46,6 +65,7 @@ export async function GET(req: NextRequest) {
           testCasesPassed: true,
           totalTestCases: true,
           submittedAt: true,
+          problemId: true,
           problem: {
             select: {
               id: true,
@@ -60,10 +80,26 @@ export async function GET(req: NextRequest) {
         take: limit,
       }),
       prisma.submission.count({ where }),
+      prisma.problemStat.findMany({
+        where: {
+          userId: user.id,
+        },
+        select: {
+          problemId: true,
+          hintsUsed: true,
+        },
+      }),
     ]);
 
+    // Map hintsUsed to submissions
+    const statsMap = new Map(problemStats.map(s => [s.problemId, s.hintsUsed]));
+    const submissionsWithHints = submissions.map(s => ({
+      ...s,
+      hintsUsed: statsMap.get(s.problemId) || false,
+    }));
+
     return NextResponse.json({
-      submissions,
+      submissions: submissionsWithHints,
       pagination: {
         page,
         limit,

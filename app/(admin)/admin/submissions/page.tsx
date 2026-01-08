@@ -30,6 +30,7 @@ interface Submission {
   testCasesPassed: number;
   totalTestCases: number;
   submittedAt: string;
+  hintsUsed?: boolean;
   user: {
     id: string;
     username: string;
@@ -90,16 +91,34 @@ const languageLabels: Record<string, string> = {
   RUST: "Rust",
 };
 
-function VerdictBadge({ verdict }: { verdict: string }) {
+function VerdictBadge({
+  verdict,
+  hintsUsed,
+}: {
+  verdict: string;
+  hintsUsed?: boolean;
+}) {
   const config = verdictConfig[verdict] || verdictConfig.PENDING;
   const Icon = config.icon;
 
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.color} ${config.bgColor}`}>
-      <Icon className="w-3.5 h-3.5" />
-      {config.label}
-    </span>
+    <div className="flex items-center gap-2">
+      <span
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.color} ${config.bgColor}`}>
+        <Icon className="w-3.5 h-3.5" />
+        {config.label}
+      </span>
+      {verdict === "ACCEPTED" && hintsUsed && (
+        <span
+          className="relative flex h-3 w-3"
+          title="A hint was used to solve this problem">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-500 items-center justify-center text-[8px] font-bold text-slate-900">
+            !
+          </span>
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -113,6 +132,7 @@ export default function AdminSubmissionsPage() {
   // Filters
   const [verdictFilter, setVerdictFilter] = useState("ALL");
   const [languageFilter, setLanguageFilter] = useState("ALL");
+  const [hintsFilter, setHintsFilter] = useState("ALL");
   const [usernameSearch, setUsernameSearch] = useState("");
   const [problemSearch, setProblemSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -130,6 +150,7 @@ export default function AdminSubmissionsPage() {
         params.set("limit", "20");
         if (verdictFilter !== "ALL") params.set("verdict", verdictFilter);
         if (languageFilter !== "ALL") params.set("language", languageFilter);
+        if (hintsFilter !== "ALL") params.set("hints", hintsFilter);
         if (usernameSearch) params.set("username", usernameSearch);
         if (problemSearch) params.set("problem", problemSearch);
 
@@ -158,6 +179,7 @@ export default function AdminSubmissionsPage() {
     page,
     verdictFilter,
     languageFilter,
+    hintsFilter,
     usernameSearch,
     problemSearch,
     router,
@@ -227,6 +249,17 @@ export default function AdminSubmissionsPage() {
               <option value="JAVA">Java</option>
               <option value="GO">Go</option>
               <option value="RUST">Rust</option>
+            </select>
+            <select
+              value={hintsFilter}
+              onChange={e => {
+                setHintsFilter(e.target.value);
+                handleSearch();
+              }}
+              className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="ALL">All Hints</option>
+              <option value="USED">Hints Used</option>
+              <option value="NOT_USED">No Hints</option>
             </select>
 
             <div className="flex items-center gap-2">
@@ -348,7 +381,10 @@ export default function AdminSubmissionsPage() {
                         </Link>
                       </td>
                       <td className="px-4 py-3">
-                        <VerdictBadge verdict={submission.verdict} />
+                        <VerdictBadge
+                          verdict={submission.verdict}
+                          hintsUsed={submission.hintsUsed}
+                        />
                         <span className="ml-2 text-xs text-slate-500">
                           {submission.testCasesPassed}/
                           {submission.totalTestCases}

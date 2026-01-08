@@ -23,27 +23,42 @@ export async function GET(
     }
 
     // Fetch user's submissions for this problem
-    const submissions = await prisma.submission.findMany({
-      where: {
-        userId: user.id,
-        problemId: problem.id,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      select: {
-        id: true,
-        verdict: true,
-        runtime: true,
-        memory: true,
-        language: true,
-        createdAt: true,
-      },
-    });
+    const [submissions, problemStat] = await Promise.all([
+      prisma.submission.findMany({
+        where: {
+          userId: user.id,
+          problemId: problem.id,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        select: {
+          id: true,
+          verdict: true,
+          runtime: true,
+          memory: true,
+          language: true,
+          createdAt: true,
+        },
+      }),
+      prisma.problemStat.findUnique({
+        where: {
+          userId_problemId: {
+            userId: user.id,
+            problemId: problem.id,
+          },
+        },
+        select: {
+          hintsUsed: true,
+        },
+      }),
+    ]);
+
+    const hintsUsed = problemStat?.hintsUsed || false;
 
     return NextResponse.json({
       success: true,
-      submissions,
+      submissions: submissions.map(s => ({ ...s, hintsUsed })),
     });
   } catch (error) {
     console.error("Error fetching submissions:", error);

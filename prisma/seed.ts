@@ -277,6 +277,7 @@ async function main() {
       role: "ADMIN",
       emailVerified: new Date(),
       xp: 1000,
+      name: "Admin",
       level: 11, // Math.floor(1000 / 100) + 1 = 11
     },
   });

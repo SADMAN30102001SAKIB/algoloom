@@ -38,6 +38,33 @@ export async function GET(req: NextRequest) {
       where.problem = { slug: { contains: problemSlug, mode: "insensitive" } };
     }
 
+    const hintsFilter = searchParams.get("hints"); // 'USED', 'NOT_USED', or null
+
+    // Handle hints filtering for admin (more complex because multiple users)
+    if (hintsFilter === "USED" || hintsFilter === "NOT_USED") {
+      const hintStats = await prisma.problemStat.findMany({
+        where: { hintsUsed: true },
+        select: { problemId: true, userId: true },
+      });
+
+      // Build an array of { userId, problemId } objects for filtering
+      if (hintsFilter === "USED") {
+        where.OR = hintStats.map(s => ({
+          userId: s.userId,
+          problemId: s.problemId,
+        }));
+        // If no one used hints, we need to ensure nothing is returned
+        if (hintStats.length === 0) {
+          where.id = "none";
+        }
+      } else {
+        where.NOT = hintStats.map(s => ({
+          userId: s.userId,
+          problemId: s.problemId,
+        }));
+      }
+    }
+
     const [submissions, total] = await Promise.all([
       prisma.submission.findMany({
         where,
@@ -51,6 +78,8 @@ export async function GET(req: NextRequest) {
           testCasesPassed: true,
           totalTestCases: true,
           submittedAt: true,
+          userId: true,
+          problemId: true,
           user: {
             select: {
               id: true,
@@ -75,8 +104,35 @@ export async function GET(req: NextRequest) {
       prisma.submission.count({ where }),
     ]);
 
+    // Fetch problem stats for the results to determine hintsUsed
+    // Only fetch for relevant users/problems in this page
+    const userProblemPairs = submissions.map(s => ({
+      userId: s.userId,
+      problemId: s.problemId,
+    }));
+
+    const problemStats = await prisma.problemStat.findMany({
+      where: {
+        OR: userProblemPairs,
+      },
+      select: {
+        userId: true,
+        problemId: true,
+        hintsUsed: true,
+      },
+    });
+
+    // Map hintsUsed to submissions
+    const statsMap = new Map(
+      problemStats.map(s => [`${s.userId}-${s.problemId}`, s.hintsUsed]),
+    );
+    const submissionsWithHints = submissions.map(s => ({
+      ...s,
+      hintsUsed: statsMap.get(`${s.userId}-${s.problemId}`) || false,
+    }));
+
     return NextResponse.json({
-      submissions,
+      submissions: submissionsWithHints,
       pagination: {
         page,
         limit,

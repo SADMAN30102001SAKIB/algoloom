@@ -29,6 +29,7 @@ interface Submission {
   testCasesPassed: number;
   totalTestCases: number;
   submittedAt: string;
+  hintsUsed?: boolean;
   problem: {
     id: string;
     title: string;
@@ -89,16 +90,34 @@ const languageLabels: Record<string, string> = {
   RUST: "Rust",
 };
 
-function VerdictBadge({ verdict }: { verdict: string }) {
+function VerdictBadge({
+  verdict,
+  hintsUsed,
+}: {
+  verdict: string;
+  hintsUsed?: boolean;
+}) {
   const config = verdictConfig[verdict] || verdictConfig.PENDING;
   const Icon = config.icon;
 
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.color} ${config.bgColor}`}>
-      <Icon className="w-3.5 h-3.5" />
-      {config.label}
-    </span>
+    <div className="flex items-center gap-2">
+      <span
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.color} ${config.bgColor}`}>
+        <Icon className="w-3.5 h-3.5" />
+        {config.label}
+      </span>
+      {verdict === "ACCEPTED" && hintsUsed && (
+        <span
+          className="relative flex h-3 w-3"
+          title="A hint was used to solve this problem">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-500 items-center justify-center text-[8px] font-bold text-slate-900">
+            !
+          </span>
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -331,7 +350,10 @@ export default function UserSubmissionsPage() {
                         </Link>
                       </td>
                       <td className="px-4 py-3">
-                        <VerdictBadge verdict={submission.verdict} />
+                        <VerdictBadge
+                          verdict={submission.verdict}
+                          hintsUsed={submission.hintsUsed}
+                        />
                         <span className="ml-2 text-xs text-slate-500">
                           {submission.testCasesPassed}/
                           {submission.totalTestCases}

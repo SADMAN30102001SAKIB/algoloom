@@ -37,7 +37,7 @@ export async function GET(
       where.language = language;
     }
 
-    const [submissions, total] = await Promise.all([
+    const [submissions, total, problemStats] = await Promise.all([
       prisma.submission.findMany({
         where,
         select: {
@@ -49,7 +49,7 @@ export async function GET(
           testCasesPassed: true,
           totalTestCases: true,
           submittedAt: true,
-          // Note: code is NOT included for privacy
+          problemId: true,
           problem: {
             select: {
               id: true,
@@ -64,7 +64,23 @@ export async function GET(
         take: limit,
       }),
       prisma.submission.count({ where }),
+      prisma.problemStat.findMany({
+        where: {
+          userId: user.id,
+        },
+        select: {
+          problemId: true,
+          hintsUsed: true,
+        },
+      }),
     ]);
+
+    // Map hintsUsed to submissions
+    const statsMap = new Map(problemStats.map(s => [s.problemId, s.hintsUsed]));
+    const submissionsWithHints = submissions.map(s => ({
+      ...s,
+      hintsUsed: statsMap.get(s.problemId) || false,
+    }));
 
     return NextResponse.json({
       user: {
@@ -72,7 +88,7 @@ export async function GET(
         name: user.name,
         image: user.image,
       },
-      submissions,
+      submissions: submissionsWithHints,
       pagination: {
         page,
         limit,
