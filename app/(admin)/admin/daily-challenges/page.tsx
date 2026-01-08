@@ -13,7 +13,10 @@ import {
   Target,
   AlertCircle,
   CheckCircle,
+  Filter,
+  X,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 interface Problem {
   id: string;
@@ -52,6 +55,8 @@ export default function DailyChallengesPage() {
   const [selectedProblem, setSelectedProblem] = useState<string>("");
   const [xpBonus, setXpBonus] = useState<number>(20);
   const [searchProblem, setSearchProblem] = useState("");
+  const [searchChallenges, setSearchChallenges] = useState("");
+  const [difficultyFilter, setDifficultyFilter] = useState("ALL");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
@@ -59,15 +64,22 @@ export default function DailyChallengesPage() {
   } | null>(null);
 
   useEffect(() => {
-    fetchChallenges();
-  }, []);
+    const timer = setTimeout(() => {
+      fetchChallenges(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchChallenges, difficultyFilter]);
 
   async function fetchChallenges(page = 1) {
     try {
       setLoading(true);
-      const res = await fetch(
-        `/api/admin/daily-challenges?page=${page}&limit=30`,
-      );
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: "30",
+        search: searchChallenges,
+        difficulty: difficultyFilter,
+      });
+      const res = await fetch(`/api/admin/daily-challenges?${params.toString()}`);
       const data = await res.json();
 
       if (data.success) {
@@ -200,6 +212,40 @@ export default function DailyChallengesPage() {
         </div>
       )}
 
+      {/* Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-900/50 border border-slate-800 p-4 rounded-xl">
+        <div className="md:col-span-3 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <Input
+            placeholder="Search by problem title or slug..."
+            value={searchChallenges}
+            onChange={(e) => setSearchChallenges(e.target.value)}
+            className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:ring-cyan-500/50"
+          />
+          {searchChallenges && (
+            <button 
+              onClick={() => setSearchChallenges("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+        <div className="relative">
+          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <select
+            value={difficultyFilter}
+            onChange={(e) => setDifficultyFilter(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white appearance-none focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition cursor-pointer"
+          >
+            <option value="ALL">All Difficulties</option>
+            <option value="EASY">Easy</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HARD">Hard</option>
+          </select>
+        </div>
+      </div>
+
       {/* Info Card */}
       <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-4">
         <div className="flex items-start gap-3">
@@ -239,9 +285,22 @@ export default function DailyChallengesPage() {
           <tbody>
             {challenges.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-8 text-center text-slate-500">
-                  No challenges scheduled yet. Auto-generation will create them
-                  on demand.
+                <td colSpan={5} className="p-12 text-center">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <Search className="w-8 h-8 text-slate-700 mb-2" />
+                    <p className="text-slate-400 text-lg">No challenges found</p>
+                    {(searchChallenges || difficultyFilter !== "ALL") && (
+                      <button 
+                        onClick={() => {
+                          setSearchChallenges("");
+                          setDifficultyFilter("ALL");
+                        }}
+                        className="text-cyan-500 hover:text-cyan-400 font-medium"
+                      >
+                        Clear all filters
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ) : (

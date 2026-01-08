@@ -20,13 +20,34 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "30");
     const upcoming = searchParams.get("upcoming") === "true";
+    const search = searchParams.get("search") || "";
+    const difficulty = searchParams.get("difficulty") || "";
 
     const skip = (page - 1) * limit;
 
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 
-    const where = upcoming ? { date: { gte: today } } : {};
+    const where: any = {};
+    
+    if (upcoming) {
+      where.date = { gte: today };
+    }
+
+    if (search || difficulty) {
+      where.problem = {};
+      
+      if (search) {
+        where.problem.OR = [
+          { title: { contains: search, mode: "insensitive" } },
+          { slug: { contains: search, mode: "insensitive" } }
+        ];
+      }
+      
+      if (difficulty && difficulty !== "ALL") {
+        where.problem.difficulty = difficulty;
+      }
+    }
 
     const [challenges, total] = await Promise.all([
       prisma.dailyChallenge.findMany({
