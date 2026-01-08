@@ -341,7 +341,7 @@ export default function SettingsPage() {
                       </div>
                       <h4 className="text-lg font-medium text-white">OAuth Account</h4>
                       <p className="text-slate-400 max-w-sm mx-auto">
-                        You are logged in via an external provider. Password management is handled by your provider directly.
+                        You are logged in via an external provider (google/github). Password management is handled by your provider directly.
                       </p>
                     </div>
                   ) : (
