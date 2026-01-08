@@ -532,15 +532,13 @@ export default function ProfilePage() {
                       <FileText className="w-4 h-4" />
                       All Submissions
                     </Link>
-                    <Link
-                      href="/friends"
-                      className="flex items-center gap-1 text-sm text-slate-400 hover:text-pink-400">
+                    <div className="flex items-center gap-1 text-sm text-slate-400">
                       <Users className="w-4 h-4" />
                       <span className="font-semibold text-slate-200">
                         {profile.friendsCount}
                       </span>{" "}
                       Friends
-                    </Link>
+                    </div>
                   </div>
                 </div>
 
