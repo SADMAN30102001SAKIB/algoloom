@@ -136,9 +136,8 @@ export const authConfig: NextAuthConfig = {
       }
       return true;
     },
-    async jwt({ token, user, account, trigger }) {
-      // For OAuth providers, fetch user data from database since NextAuth's user object
-      // only contains provider data (email, name, image), not our database fields
+    async jwt({ token, user, account }) {
+      // 1. Initial Sign In
       if (account && token.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: token.email },
@@ -162,29 +161,33 @@ export const authConfig: NextAuthConfig = {
           token.subscriptionPlan = dbUser.subscription?.plan ?? null;
         }
       } else if (user?.id) {
-        // For credentials provider, user object already has database fields
+        // For credentials provider first-time login
         token.id = user.id;
         token.role = user.role;
         token.username = user.username;
         token.emailVerified = user.emailVerified;
         token.isPro = user.isPro;
         token.subscriptionPlan = user.subscriptionPlan;
-      } else if (trigger === "update" && token.id) {
-        // Manual refresh triggered by updateSession() - fetch fresh data from DB
-        // Used after subscription changes to instantly update Pro status
+      } else if (token.id) {
+        // 2. Session Continuation / Update
+        // Fetch fresh data from DB to ensure instant reflection of role/isPro changes
+        // This avoids requiring a logout to see updated roles
         const dbUser = await prisma.user.findUnique({
-          where: { id: token.id },
+          where: { id: token.id as string },
           select: {
-            isPro: true,
             role: true,
+            isPro: true,
+            username: true,
             subscription: {
               select: { plan: true },
             },
           },
         });
+        
         if (dbUser) {
-          token.isPro = dbUser.isPro;
           token.role = dbUser.role;
+          token.isPro = dbUser.isPro;
+          token.username = dbUser.username;
           token.subscriptionPlan = dbUser.subscription?.plan ?? null;
         }
       }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { Prisma, Verdict, Language } from "@prisma/client";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -23,13 +24,13 @@ export async function GET(req: NextRequest) {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = { userId: user.id };
+    const where: Prisma.SubmissionWhereInput = { userId: user.id };
 
     if (verdict && verdict !== "ALL") {
-      where.verdict = verdict;
+      where.verdict = verdict as Verdict;
     }
     if (language && language !== "ALL") {
-      where.language = language;
+      where.language = language as Language;
     }
     if (problemId) {
       where.problemId = problemId;
