@@ -67,36 +67,6 @@ const verdictConfig: Record<
     bgColor: "bg-red-500/10",
     icon: XCircle,
   },
-  WRONG_ANSWER: {
-    label: "Wrong Answer",
-    color: "text-red-500",
-    bgColor: "bg-red-500/10",
-    icon: XCircle,
-  },
-  TIME_LIMIT_EXCEEDED: {
-    label: "Time Limit",
-    color: "text-amber-500",
-    bgColor: "bg-amber-500/10",
-    icon: Clock,
-  },
-  MEMORY_LIMIT_EXCEEDED: {
-    label: "Memory Limit",
-    color: "text-purple-500",
-    bgColor: "bg-purple-500/10",
-    icon: HardDrive,
-  },
-  RUNTIME_ERROR: {
-    label: "Runtime Error",
-    color: "text-orange-500",
-    bgColor: "bg-orange-500/10",
-    icon: AlertCircle,
-  },
-  COMPILATION_ERROR: {
-    label: "Compile Error",
-    color: "text-red-400",
-    bgColor: "bg-red-400/10",
-    icon: Code,
-  },
   PENDING: {
     label: "Pending",
     color: "text-slate-400",
@@ -239,10 +209,8 @@ export default function AdminSubmissionsPage() {
               className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="ALL">All Verdicts</option>
               <option value="ACCEPTED">Accepted</option>
-              <option value="WRONG_ANSWER">Wrong Answer</option>
-              <option value="TIME_LIMIT_EXCEEDED">Time Limit</option>
-              <option value="RUNTIME_ERROR">Runtime Error</option>
-              <option value="COMPILATION_ERROR">Compile Error</option>
+              <option value="REJECTED">Rejected</option>
+              <option value="PENDING">Pending</option>
             </select>
 
             <select

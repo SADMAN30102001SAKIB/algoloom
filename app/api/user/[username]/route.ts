@@ -79,11 +79,7 @@ export async function GET(
 
     const verdictStats = {
       ACCEPTED: 0,
-      WRONG_ANSWER: 0,
-      TIME_LIMIT_EXCEEDED: 0,
-      MEMORY_LIMIT_EXCEEDED: 0,
-      RUNTIME_ERROR: 0,
-      COMPILATION_ERROR: 0,
+      REJECTED: 0,
       PENDING: 0,
     };
 

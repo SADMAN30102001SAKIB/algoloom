@@ -202,7 +202,7 @@ export function useSubmission(problemSlug: string) {
         } catch (pollError) {
           console.error("Polling error:", pollError);
           setSummary({
-            verdict: "RUNTIME_ERROR",
+            verdict: "REJECTED",
             runtime: 0,
             memory: 0,
             testCasesPassed: 0,
@@ -222,7 +222,7 @@ export function useSubmission(problemSlug: string) {
     } catch (error) {
       console.error("Submission error:", error);
       setSummary({
-        verdict: "RUNTIME_ERROR",
+        verdict: "REJECTED",
         runtime: 0,
         memory: 0,
         testCasesPassed: 0,
