@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import {
   Calendar,
@@ -63,14 +63,8 @@ export default function DailyChallengesPage() {
     text: string;
   } | null>(null);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchChallenges(1);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [searchChallenges, difficultyFilter]);
 
-  async function fetchChallenges(page = 1) {
+  const fetchChallenges = useCallback(async (page = 1) => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -92,7 +86,14 @@ export default function DailyChallengesPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [searchChallenges, difficultyFilter]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchChallenges(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchChallenges, difficultyFilter, fetchChallenges]);
 
   async function scheduleChallenge() {
     if (!selectedDate || !selectedProblem) return;

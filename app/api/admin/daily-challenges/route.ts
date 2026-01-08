@@ -1,3 +1,4 @@
+import { Prisma, Difficulty } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
@@ -28,7 +29,7 @@ export async function GET(req: NextRequest) {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 
-    const where: any = {};
+    const where: Prisma.DailyChallengeWhereInput = {};
     
     if (upcoming) {
       where.date = { gte: today };
@@ -45,7 +46,7 @@ export async function GET(req: NextRequest) {
       }
       
       if (difficulty && difficulty !== "ALL") {
-        where.problem.difficulty = difficulty;
+        where.problem.difficulty = difficulty as Difficulty;
       }
     }
 
