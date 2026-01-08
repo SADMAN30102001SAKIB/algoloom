@@ -10,6 +10,7 @@ import {
   Target,
   Award,
 } from "lucide-react";
+import { LoomLogo } from "@/components/ui/LoomLogo";
 
 export default function HomePage() {
   return (
@@ -23,8 +24,10 @@ export default function HomePage() {
         <div className="relative container mx-auto px-4 py-24">
           <div className="text-center space-y-8 max-w-5xl mx-auto">
             {/* Logo/Title */}
-            <div className="flex items-center justify-center gap-3 mb-8">
-              <Code2 className="w-14 h-14 text-cyan-400" />
+            <div className="flex items-center justify-center gap-4 mb-8">
+              <div className="bg-slate-900/50 p-4 rounded-3xl border border-slate-800 shadow-2xl">
+                <LoomLogo size={64} />
+              </div>
               <h1 className="text-6xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
                 AlgoLoom
               </h1>

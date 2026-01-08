@@ -25,8 +25,6 @@ interface Submission {
   runtime: number | null;
   memory: number | null;
   language: string;
-  testCasesPassed: number;
-  totalTestCases: number;
   submittedAt: string;
   hintsUsed?: boolean;
   user: {
@@ -383,10 +381,6 @@ export default function AdminSubmissionsPage() {
                           verdict={submission.verdict}
                           hintsUsed={submission.hintsUsed}
                         />
-                        <span className="ml-2 text-xs text-slate-500">
-                          {submission.testCasesPassed}/
-                          {submission.totalTestCases}
-                        </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-slate-300">
                         {languageLabels[submission.language] ||

@@ -7,7 +7,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Eye, EyeOff, Code2, Loader2 } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Loader2 } from "lucide-react";
+import { LoomLogo } from "@/components/ui/LoomLogo";
 import { GoogleOneTap } from "@/components/auth/GoogleOneTap";
 
 export default function RegisterPage() {
@@ -125,8 +126,8 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 group">
-            <div className="bg-gradient-to-r from-purple-600 to-cyan-600 p-2 rounded-xl">
-              <Code2 className="h-6 w-6 text-white" />
+            <div className="bg-slate-900/50 p-2.5 rounded-xl border border-slate-800 shadow-xl group-hover:scale-105 transition-transform">
+              <LoomLogo size={28} />
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
               AlgoLoom
