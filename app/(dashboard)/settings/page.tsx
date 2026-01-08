@@ -27,6 +27,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
+  const [hasPassword, setHasPassword] = useState(true);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // Profile Form State
@@ -69,6 +70,9 @@ export default function SettingsPage() {
               githubUrl: data.user.githubUrl || "",
               linkedinUrl: data.user.linkedinUrl || ""
             });
+          }
+          if (data.hasPassword !== undefined) {
+            setHasPassword(data.hasPassword);
           }
         })
         .catch(err => console.error("Error fetching profile:", err))
@@ -323,70 +327,84 @@ export default function SettingsPage() {
             )}
 
             {activeTab === "security" && (
-              <form onSubmit={handlePasswordSubmit} className="space-y-6">
+              <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
                     <Lock className="w-5 h-5 text-red-400" />
                     Password & Security
                   </h3>
                   
-                  <div className="space-y-4 max-w-md">
-                    <div className="space-y-2">
-                      <Label htmlFor="currentPassword">Current Password</Label>
-                      <Input
-                        id="currentPassword"
-                        type="password"
-                        value={passwordData.currentPassword}
-                        onChange={e => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                        className="bg-slate-950 border-slate-800"
-                        required
-                      />
+                  {!hasPassword ? (
+                    <div className="p-8 bg-slate-950/50 border border-slate-800 rounded-xl text-center space-y-4">
+                      <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mx-auto">
+                        <User className="w-8 h-8 text-slate-500" />
+                      </div>
+                      <h4 className="text-lg font-medium text-white">OAuth Account</h4>
+                      <p className="text-slate-400 max-w-sm mx-auto">
+                        You are logged in via an external provider. Password management is handled by your provider directly.
+                      </p>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="newPassword">New Password</Label>
-                      <Input
-                        id="newPassword"
-                        type="password"
-                        value={passwordData.newPassword}
-                        onChange={e => setPasswordData({...passwordData, newPassword: e.target.value})}
-                        className="bg-slate-950 border-slate-800"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                      <Input
-                        id="confirmPassword"
-                        type="password"
-                        value={passwordData.confirmPassword}
-                        onChange={e => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                        className="bg-slate-950 border-slate-800"
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
+                  ) : (
+                    <form onSubmit={handlePasswordSubmit} className="space-y-6">
+                      <div className="space-y-4 max-w-md">
+                        <div className="space-y-2">
+                          <Label htmlFor="currentPassword">Current Password</Label>
+                          <Input
+                            id="currentPassword"
+                            type="password"
+                            value={passwordData.currentPassword}
+                            onChange={e => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                            className="bg-slate-950 border-slate-800"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="newPassword">New Password</Label>
+                          <Input
+                            id="newPassword"
+                            type="password"
+                            value={passwordData.newPassword}
+                            onChange={e => setPasswordData({...passwordData, newPassword: e.target.value})}
+                            className="bg-slate-950 border-slate-800"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                          <Input
+                            id="confirmPassword"
+                            type="password"
+                            value={passwordData.confirmPassword}
+                            onChange={e => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                            className="bg-slate-950 border-slate-800"
+                            required
+                          />
+                        </div>
+                      </div>
 
-                <div className="pt-6 flex justify-end">
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-8 h-12 shadow-lg shadow-red-500/20"
-                  >
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Lock className="w-5 h-5 mr-2" />}
-                    Update Password
-                  </Button>
-                </div>
+                      <div className="pt-6 flex justify-end">
+                        <Button
+                          type="submit"
+                          disabled={loading}
+                          className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-8 h-12 shadow-lg shadow-red-500/20"
+                        >
+                          {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Lock className="w-5 h-5 mr-2" />}
+                          Update Password
+                        </Button>
+                      </div>
 
-                <div className="mt-12 p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
-                  <h4 className="text-sm font-semibold mb-2">Password Requirements:</h4>
-                  <ul className="text-xs text-slate-400 space-y-1 list-disc pl-4">
-                    <li>Minimum 8 characters long</li>
-                    <li>Must be different from your current password</li>
-                    <li>Passwords must match Exactly</li>
-                  </ul>
+                      <div className="mt-12 p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
+                        <h4 className="text-sm font-semibold mb-2">Password Requirements:</h4>
+                        <ul className="text-xs text-slate-400 space-y-1 list-disc pl-4">
+                          <li>Minimum 8 characters long</li>
+                          <li>Must be different from your current password</li>
+                          <li>Passwords must match Exactly</li>
+                        </ul>
+                      </div>
+                    </form>
+                  )}
                 </div>
-              </form>
+              </div>
             )}
           </main>
         </div>

@@ -22,10 +22,16 @@ export async function GET() {
         githubUrl: true,
         linkedinUrl: true,
         website: true,
+        password: true,
       },
     });
 
-    return NextResponse.json({ user: dbUser });
+    const { password, ...safeUser } = dbUser || {};
+
+    return NextResponse.json({ 
+      user: safeUser,
+      hasPassword: !!password 
+    });
   } catch (error) {
     console.error("Profile fetch error:", error);
     return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
