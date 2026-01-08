@@ -107,7 +107,7 @@ async function generateDailyChallenge(date: Date) {
       publishedAt: { not: null },
       dailyChallenges: { none: {} },
     },
-    select: { id: true },
+    select: { id: true, difficulty: true },
     orderBy: { createdAt: "asc" },
   });
 
@@ -128,7 +128,7 @@ async function generateDailyChallenge(date: Date) {
         publishedAt: { not: null },
         id: { notIn: recentProblemIds },
       },
-      select: { id: true },
+      select: { id: true, difficulty: true },
       orderBy: { createdAt: "asc" },
     });
   }
@@ -137,11 +137,17 @@ async function generateDailyChallenge(date: Date) {
   if (!problem) {
     const oldestChallenge = await prisma.dailyChallenge.findFirst({
       orderBy: { date: "asc" },
-      select: { problemId: true },
+      select: { 
+        problemId: true,
+        problem: { select: { difficulty: true } }
+      },
     });
 
     if (oldestChallenge) {
-      problem = { id: oldestChallenge.problemId };
+      problem = { 
+        id: oldestChallenge.problemId, 
+        difficulty: oldestChallenge.problem.difficulty 
+      };
     }
   }
 
@@ -149,7 +155,7 @@ async function generateDailyChallenge(date: Date) {
   if (!problem) {
     problem = await prisma.problem.findFirst({
       where: { publishedAt: { not: null } },
-      select: { id: true },
+      select: { id: true, difficulty: true },
     });
   }
 
@@ -157,12 +163,17 @@ async function generateDailyChallenge(date: Date) {
     return null;
   }
 
+  // Calculate XP bonus based on difficulty
+  let xpBonus = 20;
+  if (problem.difficulty === "MEDIUM") xpBonus = 35;
+  else if (problem.difficulty === "HARD") xpBonus = 50;
+
   // Create the daily challenge
   const challenge = await prisma.dailyChallenge.create({
     data: {
       date,
       problemId: problem.id,
-      xpBonus: 20,
+      xpBonus,
     },
     include: {
       problem: {

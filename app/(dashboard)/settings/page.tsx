@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Spinner } from "@/components/ui/Spinner";
+import { PageLoader } from "@/components/ui/PageLoader";
 
 export default function SettingsPage() {
   const { data: session, status, update } = useSession();
@@ -154,9 +154,10 @@ export default function SettingsPage() {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <Spinner size="lg" />
-      </div>
+      <PageLoader 
+        message="Loading settings..." 
+        subtitle="Accessing your account preferences"
+      />
     );
   }
 

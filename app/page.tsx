@@ -54,7 +54,7 @@ export default function HomePage() {
               <Link href="/problems">
                 <Button
                   size="lg"
-                  className="text-lg gap-2 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600">
+                  className="text-lg gap-2 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white">
                   Start Solving
                   <ArrowRight className="w-5 h-5" />
                 </Button>
@@ -422,7 +422,7 @@ export default function HomePage() {
           <Link href="/problems">
             <Button
               size="lg"
-              className="text-lg gap-2 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600">
+              className="text-lg gap-2 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white">
               Explore Problems
               <ArrowRight className="w-5 h-5" />
             </Button>

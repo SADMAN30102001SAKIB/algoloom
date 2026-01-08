@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { Spinner } from "@/components/ui/Spinner";
 import {
   Trophy,
@@ -164,6 +165,7 @@ function LeaderboardContent() {
   const searchParams = useSearchParams();
   const [data, setData] = useState<LeaderboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const timeframe = searchParams.get("timeframe") || "all-time";
   const page = parseInt(searchParams.get("page") || "1");
@@ -181,6 +183,7 @@ function LeaderboardContent() {
         console.error("Failed to fetch leaderboard:", err);
       } finally {
         setLoading(false);
+        setIsInitialLoading(false);
       }
     }
 
@@ -194,6 +197,15 @@ function LeaderboardContent() {
     });
     router.push(`/leaderboard?${params.toString()}`);
   };
+
+  if (isInitialLoading) {
+    return (
+      <PageLoader 
+        message="Loading leaderboard..." 
+        subtitle="Fetching top developers from the community"
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950">
