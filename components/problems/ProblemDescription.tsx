@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import Link from "next/link";
 import { AIHintsTab } from "./AIHintsTab";
 
 interface Submission {
@@ -641,9 +642,11 @@ function SolutionsTab({ problemSlug }: { problemSlug: string }) {
 
         <div className="mb-3 text-sm text-slate-400">
           by{" "}
-          <span className="text-purple-400 font-medium">
+          <Link
+            href={`/profile/${bestRuntime.username}`}
+            className="text-purple-400 font-medium hover:text-purple-300 transition-colors">
             @{bestRuntime.username}
-          </span>
+          </Link>
           {" · "}
           <span className="text-slate-500">
             {new Date(bestRuntime.submittedAt).toLocaleDateString()}
@@ -680,9 +683,11 @@ function SolutionsTab({ problemSlug }: { problemSlug: string }) {
 
           <div className="mb-3 text-sm text-slate-400">
             by{" "}
-            <span className="text-purple-400 font-medium">
+            <Link
+              href={`/profile/${bestMemory.username}`}
+              className="text-purple-400 font-medium hover:text-purple-300 transition-colors">
               @{bestMemory.username}
-            </span>
+            </Link>
             {" · "}
             <span className="text-slate-500">
               {new Date(bestMemory.submittedAt).toLocaleDateString()}

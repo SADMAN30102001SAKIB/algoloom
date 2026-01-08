@@ -407,6 +407,8 @@ export default function AdminSubmissionsPage() {
                           </button>
                           <Link
                             href={`/submissions/${submission.id}?from=admin`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="text-slate-400 hover:text-white transition-colors"
                             title="View full details">
                             <ExternalLink className="w-4 h-4" />

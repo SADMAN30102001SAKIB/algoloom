@@ -384,6 +384,8 @@ export default function SubmissionsPage() {
                       <td className="px-4 py-3">
                         <Link
                           href={`/submissions/${submission.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="text-slate-400 hover:text-white transition-colors">
                           <ExternalLink className="w-4 h-4" />
                         </Link>

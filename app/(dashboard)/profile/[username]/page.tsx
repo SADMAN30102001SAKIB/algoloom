@@ -532,6 +532,15 @@ export default function ProfilePage() {
                       <FileText className="w-4 h-4" />
                       All Submissions
                     </Link>
+                    <Link
+                      href="/friends"
+                      className="flex items-center gap-1 text-sm text-slate-400 hover:text-pink-400">
+                      <Users className="w-4 h-4" />
+                      <span className="font-semibold text-slate-200">
+                        {profile.friendsCount}
+                      </span>{" "}
+                      Friends
+                    </Link>
                   </div>
                 </div>
 
@@ -594,12 +603,6 @@ export default function ProfilePage() {
             label="Achievements"
             value={profile.achievements.length}
             color="bg-purple-500/20 text-purple-500"
-          />
-          <StatCard
-            icon={Users}
-            label="Friends"
-            value={profile.friendsCount}
-            color="bg-pink-500/20 text-pink-500"
           />
         </motion.div>
 
