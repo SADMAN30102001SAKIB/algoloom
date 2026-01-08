@@ -258,7 +258,7 @@ export default function ProblemPage({
   }
 
   return (
-    <div className="h-screen flex flex-col bg-slate-900">
+    <div className="h-screen max-h-screen flex flex-col bg-slate-900 overflow-hidden">
       {/* Header */}
       <header className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
