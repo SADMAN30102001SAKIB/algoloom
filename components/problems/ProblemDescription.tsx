@@ -86,7 +86,7 @@ export function ProblemDescription({
   currentLanguage = "PYTHON",
 }: ProblemDescriptionProps) {
   return (
-    <div className="w-1/2 h-full border-r border-slate-700 overflow-y-auto min-h-0 bg-slate-950">
+    <div className="w-1/2 h-full border-r border-slate-700 overflow-y-auto min-h-0 bg-slate-900">
       <div className="p-6">
         {/* Tabs */}
         <div className="flex gap-4 mb-6 border-b border-slate-700">
