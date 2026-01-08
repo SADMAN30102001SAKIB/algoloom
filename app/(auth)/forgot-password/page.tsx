@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
               </div>
               <Button asChild className="w-full bg-slate-800 border-slate-700 hover:bg-slate-700">
                 <Link href="/login">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  <ArrowLeft className="mr-2 h-4 w-4 text-white" />
                   Back to login
                 </Link>
               </Button>
@@ -126,7 +126,7 @@ export default function ForgotPasswordPage() {
                   href="/login"
                   className="text-sm text-slate-400 hover:text-white inline-flex items-center transition-colors"
                 >
-                  <ArrowLeft className="mr-2 h-3.5 w-3.5" />
+                  <ArrowLeft className="text-white mr-2 h-3.5 w-3.5" />
                   Back to login
                 </Link>
               </p>
