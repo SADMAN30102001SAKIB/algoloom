@@ -258,7 +258,7 @@ export default function ProblemPage({
   }
 
   return (
-    <div className="h-screen max-h-screen flex flex-col bg-slate-900 overflow-hidden">
+    <div className="fixed inset-0 flex flex-col bg-slate-950 overflow-hidden">
       {/* Header */}
       <header className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -291,7 +291,7 @@ export default function ProblemPage({
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Left Panel - Problem Description */}
         <ProblemDescription
           problem={problem}
