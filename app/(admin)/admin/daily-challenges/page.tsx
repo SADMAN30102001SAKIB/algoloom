@@ -363,12 +363,14 @@ export default function DailyChallengesPage() {
                       </span>
                     </td>
                     <td className="p-4 text-right">
-                      <button
-                        onClick={() => deleteChallenge(challenge.id)}
-                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                        title="Delete (auto-generation will take over)">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => deleteChallenge(challenge.id)}
+                          className="p-2 text-red-400 hover:text-red-300 border border-slate-700 rounded-lg hover:bg-slate-800/50 transition-colors"
+                          title="Delete (auto-generation will take over)">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

@@ -395,13 +395,13 @@ export default function AdminSubmissionsPage() {
                         {formatTimeAgo(submission.submittedAt)}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => {
                               setPreviewCode(submission.code);
                               setPreviewLanguage(submission.language);
                             }}
-                            className="text-slate-400 hover:text-white transition-colors"
+                            className="p-2 text-slate-400 hover:text-white border border-slate-700 rounded-lg hover:bg-slate-800/50 transition"
                             title="Preview code">
                             <Eye className="w-4 h-4" />
                           </button>
@@ -409,7 +409,7 @@ export default function AdminSubmissionsPage() {
                             href={`/submissions/${submission.id}?from=admin`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-slate-400 hover:text-white transition-colors"
+                            className="p-2 text-slate-400 hover:text-white border border-slate-700 rounded-lg hover:bg-slate-800/50 transition"
                             title="View full details">
                             <ExternalLink className="w-4 h-4" />
                           </Link>

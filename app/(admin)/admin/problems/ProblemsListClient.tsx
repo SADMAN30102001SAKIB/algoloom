@@ -162,20 +162,20 @@ export default function ProblemsListClient({
                 <Link
                   href={`/problems/${problem.slug}?from=admin`}
                   target="_blank"
-                  className="p-2 text-slate-400 hover:text-white border border-slate-700 rounded-lg hover:bg-slate-700 transition"
+                  className="p-2 text-slate-400 hover:text-white border border-slate-700 rounded-lg hover:bg-slate-800/50 transition"
                   title="Preview Problem">
                   <Eye className="w-4 h-4" />
                 </Link>
                 <Link
                   href={`/admin/problems/${problem.slug}`}
-                  className="p-2 text-blue-400 hover:text-blue-300 border border-slate-700 rounded-lg hover:bg-slate-700 transition"
+                  className="p-2 text-blue-400 hover:text-blue-300 border border-slate-700 rounded-lg hover:bg-slate-800/50 transition"
                   title="Edit Problem">
                   <Edit className="w-4 h-4" />
                 </Link>
                 <button
                   onClick={() => handleDelete(problem.id, problem.title)}
                   disabled={deleting === problem.id}
-                  className="p-2 text-red-400 hover:text-red-300 border border-slate-700 rounded-lg hover:bg-slate-700 transition disabled:opacity-50"
+                  className="p-2 text-red-400 hover:text-red-300 border border-slate-700 rounded-lg hover:bg-slate-800/50 transition disabled:opacity-50"
                   title="Delete Problem">
                   {deleting === problem.id ? (
                     <div className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />

@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Eye, Trash2 } from "lucide-react";
 
 interface User {
   id: string;
@@ -228,18 +228,26 @@ export default function UsersListClient({ users }: UsersListClientProps) {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm space-x-3">
-                    <Link
-                      href={`/profile/${user.username}`}
-                      className="text-emerald-400 hover:text-emerald-300">
-                      View
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(user.id)}
-                      disabled={deleting === user.id}
-                      className="text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                      {deleting === user.id ? "Deleting..." : "Delete"}
-                    </button>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                    <div className="flex items-center justify-end gap-2">
+                      <Link
+                        href={`/profile/${user.username}`}
+                        className="p-2 text-slate-400 hover:text-white border border-slate-700 rounded-lg hover:bg-slate-800/50 transition"
+                        title="View Profile">
+                        <Eye className="w-4 h-4" />
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(user.id)}
+                        disabled={deleting === user.id}
+                        className="p-2 text-red-400 hover:text-red-300 border border-slate-700 rounded-lg hover:bg-slate-800/50 transition disabled:opacity-50"
+                        title="Delete User">
+                        {deleting === user.id ? (
+                          <div className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
