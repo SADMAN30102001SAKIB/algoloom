@@ -317,7 +317,7 @@ export default function SettingsPage() {
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white px-8 h-12 shadow-lg shadow-cyan-500/20"
+                    className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white px-8 h-12 shadow-lg"
                   >
                     {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Save className="w-5 h-5 mr-2" />}
                     Save Profile
