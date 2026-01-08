@@ -455,7 +455,16 @@ function SubmissionsTab({
   };
 
   const getVerdictText = (verdict: string) => {
-    return verdict;
+    switch (verdict) {
+      case "ACCEPTED":
+        return "Accepted";
+      case "REJECTED":
+        return "Rejected";
+      case "PENDING":
+        return "Pending";
+      default:
+        return verdict;
+    }
   };
 
   const formatTime = (timestamp: string) => {

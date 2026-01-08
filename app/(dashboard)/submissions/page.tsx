@@ -55,7 +55,7 @@ const verdictConfig: Record<
     icon: CheckCircle,
   },
   REJECTED: {
-    label: "Failed",
+    label: "Rejected",
     color: "text-red-500",
     bgColor: "bg-red-500/10",
     icon: XCircle,

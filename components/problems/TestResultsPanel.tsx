@@ -188,7 +188,11 @@ function SummarySection({ summary }: { summary: SubmissionSummary }) {
               ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
               : "bg-gradient-to-r from-red-500 to-rose-500 text-white"
           }`}>
-          {summary.verdict.replace(/_/g, " ")}
+          {summary.verdict === "ACCEPTED"
+            ? "Accepted"
+            : summary.verdict === "REJECTED"
+              ? "Rejected"
+              : summary.verdict.replace(/_/g, " ")}
         </div>
       </div>
 
