@@ -22,10 +22,11 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/Spinner";
 
 export default function SettingsPage() {
-  const { data: session, update } = useSession();
+  const { data: session, status, update } = useSession();
   const [activeTab, setActiveTab] = useState<"profile" | "security">("profile");
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [hasFetched, setHasFetched] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // Profile Form State
@@ -46,9 +47,17 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
-    if (session?.user) {
+    if (status === "loading") return;
+
+    if (status === "unauthenticated") {
+      setInitialLoading(false);
+      return;
+    }
+
+    if (status === "authenticated" && !hasFetched) {
+      setHasFetched(true);
       // Fetch full profile data
-      fetch(`/api/user/${session.user.username}`)
+      fetch(`/api/user/profile`)
         .then(res => res.json())
         .then(data => {
           if (data.user) {
@@ -62,9 +71,10 @@ export default function SettingsPage() {
             });
           }
         })
+        .catch(err => console.error("Error fetching profile:", err))
         .finally(() => setInitialLoading(false));
     }
-  }, [session]);
+  }, [status, session?.user?.username, hasFetched]);
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +90,18 @@ export default function SettingsPage() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to update profile");
+
+      // Update local state with the saved data
+      if (data.user) {
+        setProfileData({
+          name: data.user.name || "",
+          bio: data.user.bio || "",
+          location: data.user.location || "",
+          website: data.user.website || "",
+          githubUrl: data.user.githubUrl || "",
+          linkedinUrl: data.user.linkedinUrl || ""
+        });
+      }
 
       setMessage({ type: "success", text: "Profile updated successfully!" });
       
