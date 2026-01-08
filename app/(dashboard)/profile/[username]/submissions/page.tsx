@@ -130,6 +130,7 @@ export default function UserSubmissionsPage() {
   // Filters
   const [verdictFilter, setVerdictFilter] = useState("ALL");
   const [languageFilter, setLanguageFilter] = useState("ALL");
+  const [hintsFilter, setHintsFilter] = useState("ALL");
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -141,6 +142,7 @@ export default function UserSubmissionsPage() {
         params.set("limit", "20");
         if (verdictFilter !== "ALL") params.set("verdict", verdictFilter);
         if (languageFilter !== "ALL") params.set("language", languageFilter);
+        if (hintsFilter !== "ALL") params.set("hints", hintsFilter);
 
         const res = await fetch(`/api/user/${username}/submissions?${params}`);
         const data = await res.json();
@@ -160,7 +162,7 @@ export default function UserSubmissionsPage() {
     }
 
     fetchSubmissions();
-  }, [username, page, verdictFilter, languageFilter]);
+  }, [username, page, verdictFilter, languageFilter, hintsFilter]);
 
   const handleFilterChange = () => {
     setPage(1);
@@ -261,6 +263,18 @@ export default function UserSubmissionsPage() {
               <option value="JAVA">Java</option>
               <option value="GO">Go</option>
               <option value="RUST">Rust</option>
+            </select>
+
+            <select
+              value={hintsFilter}
+              onChange={e => {
+                setHintsFilter(e.target.value);
+                handleFilterChange();
+              }}
+              className="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
+              <option value="ALL">All Hints</option>
+              <option value="USED">Hints Used</option>
+              <option value="NOT_USED">No Hints</option>
             </select>
 
             {pagination && (

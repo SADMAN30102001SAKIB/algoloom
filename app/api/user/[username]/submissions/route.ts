@@ -14,6 +14,7 @@ export async function GET(
     const limit = parseInt(searchParams.get("limit") || "20");
     const verdict = searchParams.get("verdict");
     const language = searchParams.get("language");
+    const hintsFilter = searchParams.get("hints"); // 'USED', 'NOT_USED', or null
 
     // Find user by username
     const user = await prisma.user.findUnique({
@@ -35,6 +36,24 @@ export async function GET(
     }
     if (language && language !== "ALL") {
       where.language = language;
+    }
+
+    // Handle hints filtering
+    if (hintsFilter === "USED" || hintsFilter === "NOT_USED") {
+      const hintStats = await prisma.problemStat.findMany({
+        where: {
+          userId: user.id,
+          hintsUsed: true,
+        },
+        select: { problemId: true },
+      });
+      const problemIdsWithHints = hintStats.map(s => s.problemId);
+
+      if (hintsFilter === "USED") {
+        where.problemId = { in: problemIdsWithHints };
+      } else {
+        where.problemId = { notIn: problemIdsWithHints };
+      }
     }
 
     const [submissions, total, problemStats] = await Promise.all([

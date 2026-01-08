@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -21,9 +22,11 @@ import {
   Flame,
   BadgeCheck,
   Users,
+  Settings,
 } from "lucide-react";
 import FriendButton from "@/components/FriendButton";
 import { PremiumBadge } from "@/components/premium/PremiumBadge";
+import { Button } from "@/components/ui/button";
 
 // Brand icons (lucide deprecated them)
 const GithubIcon = () => (
@@ -356,10 +359,13 @@ function RecentSolvedList({
 
 export default function ProfilePage() {
   const params = useParams();
+  const { data: session } = useSession();
   const username = params.username as string;
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const isOwnProfile = session?.user?.username === username;
 
   useEffect(() => {
     async function fetchProfile() {
@@ -460,6 +466,17 @@ export default function ProfilePage() {
                       targetUserId={profile.id}
                       targetUsername={profile.username}
                     />
+                    {isOwnProfile && (
+                      <Link href="/settings">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center gap-2 border-slate-700 hover:bg-slate-800 text-slate-300">
+                          <Settings className="w-4 h-4" />
+                          Edit Profile
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                   <p className="text-slate-400 truncate max-w-[250px] md:max-w-[350px]">
                     @{profile.username}

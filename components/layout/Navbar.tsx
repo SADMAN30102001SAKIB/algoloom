@@ -162,6 +162,14 @@ export default function Navbar() {
                   <DropdownMenuItem
                     asChild
                     className="text-slate-200 focus:bg-slate-800 focus:text-white">
+                    <Link href="/settings" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    asChild
+                    className="text-slate-200 focus:bg-slate-800 focus:text-white">
                     <Link href="/settings/billing" className="cursor-pointer">
                       <CreditCard className="mr-2 h-4 w-4" />
                       Billing
