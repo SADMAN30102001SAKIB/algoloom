@@ -78,6 +78,7 @@ export default async function AdminDashboard({
           icon={
             <Send className="w-10 h-10 text-green-400 group-hover:text-green-300 transition-colors" />
           }
+          href="/admin/submissions"
         />
         <StatCard
           title="Test Cases"
