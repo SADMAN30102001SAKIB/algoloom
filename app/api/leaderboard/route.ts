@@ -58,16 +58,29 @@ export async function GET(req: NextRequest) {
       take: limit,
     });
 
-    // Calculate the starting rank for this page
-    // We need to count how many users have higher scores than the first entry on this page
     const startingRank = (page - 1) * limit + 1;
 
-    // Transform to match existing response format
+    // Fetch total accepted submission counts for all users on this page
+    const acceptedCounts = await prisma.submission.groupBy({
+      by: ["userId"],
+      where: {
+        userId: { in: entries.map(e => e.userId) },
+        verdict: "ACCEPTED",
+      },
+      _count: {
+        _all: true,
+      },
+    });
+
+    const acceptedMap = new Map(
+      acceptedCounts.map(c => [c.userId, c._count._all]),
+    );
+
     // Calculate streaks for all users in parallel
     const streakPromises = entries.map(entry => calculateStreak(entry.user.id));
     const streaks = await Promise.all(streakPromises);
 
-    // Calculate ranks dynamically, handling ties (same score = same rank)
+    // Variables for rank calculation
     let currentRank = startingRank;
     let lastScore = entries[0]?.score ?? 0;
 
@@ -79,6 +92,7 @@ export async function GET(req: NextRequest) {
       lastScore = entry.score;
 
       const level = Math.floor(Math.sqrt(entry.user.xp / 5)) + 1;
+      const acceptedCount = acceptedMap.get(entry.userId) || 0;
 
       return {
         rank: currentRank,
@@ -95,9 +109,7 @@ export async function GET(req: NextRequest) {
         acceptanceRate:
           entry.user._count.submissions > 0
             ? Math.round(
-                (entry.user._count.problemStats /
-                  entry.user._count.submissions) *
-                  100,
+                (acceptedCount / entry.user._count.submissions) * 100,
               )
             : 0,
         currentStreak: streaks[index],

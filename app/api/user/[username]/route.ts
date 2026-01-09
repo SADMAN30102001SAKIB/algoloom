@@ -259,7 +259,7 @@ export async function GET(
         acceptanceRate:
           user._count.submissions > 0
             ? Math.round(
-                (user._count.problemStats / user._count.submissions) * 100,
+                (verdictStats.ACCEPTED / user._count.submissions) * 100,
               )
             : 0,
         memberSince: user.createdAt,

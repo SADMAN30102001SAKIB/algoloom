@@ -738,28 +738,72 @@ export default function ProblemForm({ problem }: { problem?: ProblemData }) {
               </div>
 
               <div>
-                <label className="block text-xs text-slate-400 mb-1">
-                  Additional Valid Outputs (comma-separated, for multi-answer)
-                </label>
-                <input
-                  type="text"
-                  value={testCase.expectedOutputs?.join(", ") || ""}
-                  onChange={e =>
-                    updateTestCase(
-                      index,
-                      "expectedOutputs",
-                      e.target.value
-                        .split(",")
-                        .map(s => s.trim())
-                        .filter(Boolean),
-                    )
-                  }
-                  className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-white text-sm"
-                  placeholder="0 3, 1 2"
-                />
-                <p className="text-xs text-slate-500 mt-1">
-                  Leave empty if only one answer. Include primary output if
-                  it&apos;s one of multiple answers.
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs text-slate-400">
+                    Additional Valid Outputs (for multi-answer problems)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = testCase.expectedOutputs || [];
+                      updateTestCase(index, "expectedOutputs", [...current, ""]);
+                    }}
+                    className="text-xs text-blue-400 hover:text-blue-300">
+                    + Add Alternative Output
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {(testCase.expectedOutputs || []).map((altOutput, altIndex) => (
+                    <div key={altIndex} className="relative group">
+                      <textarea
+                        rows={3}
+                        value={altOutput}
+                        onChange={e => {
+                          const newAltOutputs = [
+                            ...(testCase.expectedOutputs || []),
+                          ];
+                          newAltOutputs[altIndex] = e.target.value;
+                          updateTestCase(index, "expectedOutputs", newAltOutputs);
+                        }}
+                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-white text-sm font-mono pr-12"
+                        placeholder="Alternative valid output..."
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newAltOutputs = (
+                            testCase.expectedOutputs || []
+                          ).filter((_, i) => i !== altIndex);
+                          updateTestCase(index, "expectedOutputs", newAltOutputs);
+                        }}
+                        className="absolute top-2 right-2 p-1.5 text-red-400 hover:bg-red-400/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Remove alternative output">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                  {(testCase.expectedOutputs || []).length === 0 && (
+                    <p className="text-xs text-slate-600 italic">
+                      No alternative outputs defined.
+                    </p>
+                  )}
+                </div>
+
+                <p className="text-xs text-slate-500 mt-2">
+                  Each alternative output will be treated as a valid result.
+                  The primary output is already checked by default.
                 </p>
               </div>
             </div>

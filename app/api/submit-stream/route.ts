@@ -200,11 +200,21 @@ async function processSubmissionAsync(
           const isSuccessfulExecution =
             result.status.id === 3 || result.status.id === 4;
 
-          const passed =
-            isSuccessfulExecution &&
-            validOutputs.some(
-              (expected: string) => userOutput === expected.trim(),
-            );
+          // Helper to normalize strings for robust comparison (handles line endings and trailing whitespace)
+          const normalize = (str: string) =>
+            str
+              .split(/\r?\n/)
+              .map(line => line.trimEnd())
+              .filter(line => line.length > 0 || str.includes("\n")) // Keep empty lines if it's multiline
+              .join("\n")
+              .trim();
+
+          const normalizedUserOutput = normalize(userOutput);
+          const matchedOutput = validOutputs.find(
+            (expected: string) => normalizedUserOutput === normalize(expected),
+          );
+
+          const passed = isSuccessfulExecution && !!matchedOutput;
 
           // Safely parse runtime and memory with fallbacks
           const runtime = Math.max(0, parseFloat(result.time || "0") * 1000);
@@ -262,7 +272,7 @@ async function processSubmissionAsync(
                 testCaseId: testCase.id,
                 passed,
                 output: userOutput,
-                expectedOutput: testCase.output.trim(),
+                expectedOutput: matchedOutput || testCase.output.trim(),
                 runtime: Math.round(runtime),
                 memory,
                 errorMessage,
